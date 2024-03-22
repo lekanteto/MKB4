@@ -3,7 +3,7 @@ package koziol.mooo.com.mkb2.data
 import android.content.Context
 import koziol.mooo.com.mkb2.KBHold
 
-class HoldsRepository(private val context: Context) {
+class HoldsRepository(context: Context) {
 
     private val myDb = OriginalDbOpenHelper(context).readableDatabase
 
