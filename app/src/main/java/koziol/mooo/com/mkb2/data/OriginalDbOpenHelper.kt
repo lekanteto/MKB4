@@ -1,4 +1,4 @@
-package koziol.mooo.com.mkb2
+package koziol.mooo.com.mkb2.data
 import android.content.Context
 import android.content.SharedPreferences
 import android.database.sqlite.SQLiteDatabase

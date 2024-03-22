@@ -1,10 +1,12 @@
 package koziol.mooo.com.mkb2
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.Column
@@ -21,16 +23,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.tooling.preview.Preview
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import koziol.mooo.com.mkb2.data.HoldsRepository
 import koziol.mooo.com.mkb2.ui.theme.MKB2Theme
 import kotlin.math.max
 
@@ -38,35 +42,10 @@ import kotlin.math.max
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        var holdsList: List<KBHold> = mutableListOf<KBHold>()
 
-        val holdsList = mutableListOf<KBHold>()
         CoroutineScope(Dispatchers.IO).launch {
-            val myDb = OriginalDbOpenHelper(applicationContext).readableDatabase
-            val holdsCursor = myDb.rawQuery(
-                """
-                SELECT placements.id, holes.x, holes.y
-                FROM placements JOIN holes ON placements.hole_id=holes.id
-                WHERE 
-                	placements.layout_id=1 AND -- Kilterboard Original layout
-                	holes.x BETWEEN 1 AND 143 AND holes.y BETWEEN 0 AND 156 -- dimensions of 12x12 w/ kickboard
-                ORDER BY holes.x, holes.y
-
-            """.trimIndent(), null
-            )
-
-            var id: Int
-            var x: Int
-            var y: Int
-            holdsCursor.moveToFirst()
-            do {
-                id = holdsCursor.getInt(0)
-                x = holdsCursor.getInt(1)
-                y = holdsCursor.getInt(2)
-                holdsList.add(KBHold(id, x, y))
-                println("$id, $x, $y")
-                holdsCursor.moveToNext()
-            } while (!holdsCursor.isLast)
-            holdsCursor.close()
+            holdsList = HoldsRepository(applicationContext).getAllHolds()
         }
         setContent {
             MKB2Theme {
@@ -98,9 +77,11 @@ fun KilterBard(holds: List<KBHold>) {
             scale = max(scale * zoomChange, 1.0F)
             offset += offsetChange * scale
         }
+        val textMeasurer = rememberTextMeasurer()
+
         Image(
             painter = painterResource(id = R.drawable._546), "KB image",
-            Modifier
+            modifier = Modifier
                 .clipToBounds()
                 .graphicsLayer(
                     scaleX = scale,
@@ -109,17 +90,29 @@ fun KilterBard(holds: List<KBHold>) {
                     translationY = offset.y,
                 )
                 .transformable(state = state)
-                .drawWithContent {
-                    drawContent()
-                    for (hold in holds) {
-                        drawCircle(
-                            color = Color.Magenta, 20F, center = Offset(
-                                hold.xFraction * size.width, hold.yFraction * size.height
-                            ), 1F, style = Stroke(10F)
-                        )
+//                .drawWithContent {
+//                    drawContent()
+//                    for (hold in holds) {
+//                        drawCircle(
+//                            color = Color.Magenta, 20F, center = Offset(
+//                                hold.xFraction * size.width, hold.yFraction * size.height
+//                            ), 1F, style = Stroke(10F)
+//                        )
+//                    }
+//                }
+                .pointerInput(Unit) {
+                    detectTapGestures { offset ->
+                        Log.d("MKB2","${offset.x/size.width} ${offset.y/size.height}")
                     }
-                },
+                }
         )
+        Canvas(modifier = Modifier) {
+            val canvasQuadrantSize = Size(40F, 40F)
+            drawRect(
+                color = Color.Magenta,
+                size = canvasQuadrantSize
+            )
+        }
         Text("Foo", Modifier.fillMaxHeight())
     }
 
