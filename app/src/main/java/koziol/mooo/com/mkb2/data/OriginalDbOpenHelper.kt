@@ -70,7 +70,7 @@ class OriginalDbOpenHelper(private val context: Context) : SQLiteOpenHelper(cont
     companion object {
         const val ASSETS_PATH = "databases"
         const val DATABASE_NAME = "db-286.sqlite3"
-        const val DATABASE_VERSION = 1
+        const val DATABASE_VERSION = 2
     }
 
 }
