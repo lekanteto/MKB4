@@ -97,7 +97,7 @@ class BoardViewModel : ViewModel() {
     }
 
     private fun limitOfStartHoldsReached(): Boolean {
-        var numOfStartHolds = 0;
+        var numOfStartHolds = 0
         selectedHoldsList.forEach {
             if (it.role == StartHold) {
                 numOfStartHolds++
@@ -107,7 +107,7 @@ class BoardViewModel : ViewModel() {
     }
 
     private fun limitOfFinishHoldsReached(): Boolean {
-        var numOfFinishHolds = 0;
+        var numOfFinishHolds = 0
         selectedHoldsList.forEach {
             if (it.role == FinishHold) {
                 numOfFinishHolds++
