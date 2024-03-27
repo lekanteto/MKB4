@@ -32,9 +32,13 @@ import androidx.compose.ui.unit.Dp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import koziol.mooo.com.mkb2.data.ClimbRepository
 import koziol.mooo.com.mkb2.data.KBHold
 import koziol.mooo.com.mkb2.data.HoldsRepository
+import koziol.mooo.com.mkb2.data.OriginalDbOpenHelper
+import koziol.mooo.com.mkb2.ui.Climbs
 import koziol.mooo.com.mkb2.ui.KilterBard
+import koziol.mooo.com.mkb2.ui.MkbScaffold
 import koziol.mooo.com.mkb2.ui.theme.MKB2Theme
 import kotlin.math.max
 
@@ -42,7 +46,9 @@ import kotlin.math.max
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        HoldsRepository.setup(applicationContext)
+        val db = OriginalDbOpenHelper(applicationContext).readableDatabase
+        HoldsRepository.setup(db)
+        ClimbRepository.db = db
 
         setContent {
             MKB2Theme {
@@ -50,7 +56,8 @@ class MainActivity : ComponentActivity() {
                 Surface(
                     modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background
                 ) {
-                    KilterBard()
+                    //KilterBard()
+                    MkbScaffold()
                 }
             }
         }

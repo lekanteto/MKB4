@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -40,7 +41,7 @@ class BoardViewModel : ViewModel() {
         info = newInfo
     }
 
-    fun updateHoldsSelection(tap: Pair<Float, Float>) {
+    fun updateHoldsSelection(tap: Offset) {
         val selectedHold = holdsRepo.getNearestHold(tap)
         if (selectedHoldsList.contains(selectedHold)) {
             determineHoldColor(selectedHold)
@@ -52,7 +53,7 @@ class BoardViewModel : ViewModel() {
         }
     }
 
-    fun removeHold(tap: Pair<Float, Float>) {
+    fun removeHold(tap: Offset) {
         val selectedHold = holdsRepo.getNearestHold(tap)
         if (selectedHoldsList.contains(selectedHold)) {
             selectedHoldsList.remove(selectedHold)

@@ -1,20 +1,13 @@
 package koziol.mooo.com.mkb2.data
 
-import android.annotation.SuppressLint
-import android.app.Application
-import android.content.Context
 import android.database.sqlite.SQLiteDatabase
-import kotlin.math.pow
-import kotlin.math.sqrt
+import androidx.compose.ui.geometry.Offset
 
-@SuppressLint("StaticFieldLeak")
 object HoldsRepository {
-
-    private lateinit var context: Context
 
     private lateinit var myDb: SQLiteDatabase
 
-    lateinit var allHoldsList: List<KBHold>
+    private lateinit var allHoldsList: List<KBHold>
 
     private val holdRoles = mapOf(
         StartHold.id to StartHold,
@@ -23,9 +16,8 @@ object HoldsRepository {
         FootHold.id to FootHold
     )
 
-    fun setup(context: Context) {
-        this.context = context
-        myDb = OriginalDbOpenHelper(context).readableDatabase
+    fun setup(db: SQLiteDatabase) {
+        myDb = db
         allHoldsList = getAllHolds()
     }
 
@@ -62,11 +54,11 @@ object HoldsRepository {
         return holdsList
     }
 
-    fun getNearestHold(coordinates: Pair<Float, Float>): KBHold {
+    fun getNearestHold(offset: Offset): KBHold {
         var nearestHold = allHoldsList.first()
         var nearestDistance = 2F
         allHoldsList.forEach {
-            val currentDistance = getDistance(coordinates, it)
+            val currentDistance = getDistance(offset, it)
             if (currentDistance < nearestDistance) {
                 nearestHold = it
                 nearestDistance = currentDistance
@@ -75,9 +67,7 @@ object HoldsRepository {
         return nearestHold
     }
 
-    private fun getDistance(point: Pair<Float, Float>, hold: KBHold): Float {
-        return sqrt(
-            (point.first - hold.xFraction).pow(2) + (point.second - hold.yFraction).pow(2)
-        )
+    private fun getDistance(point: Offset, hold: KBHold): Float {
+        return point.minus(Offset(hold.xFraction, hold.yFraction)).getDistanceSquared()
     }
 }
