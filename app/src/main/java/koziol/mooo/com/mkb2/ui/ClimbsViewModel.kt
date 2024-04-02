@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import koziol.mooo.com.mkb2.data.BaseFilter
 import koziol.mooo.com.mkb2.data.Climb
 import koziol.mooo.com.mkb2.data.ClimbRepository
 
@@ -18,10 +19,10 @@ class ClimbsViewModel : ViewModel() {
     init {
         CoroutineScope(Dispatchers.IO).launch {
             climbsRepo = ClimbRepository()
-            climbsList.addAll(climbsRepo.getClimbs())
+            climbsList.addAll(climbsRepo.getFilteredClimbs(BaseFilter()))
         }
     }
 
-    private val _uiState = MutableStateFlow(ClimbsUiState())
-    val uiState: StateFlow<ClimbsUiState> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow(FilterClimbsUiState())
+    val uiState: StateFlow<FilterClimbsUiState> = _uiState.asStateFlow()
 }

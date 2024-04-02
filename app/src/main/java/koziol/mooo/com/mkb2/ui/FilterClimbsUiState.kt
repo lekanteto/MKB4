@@ -2,9 +2,9 @@ package koziol.mooo.com.mkb2.ui
 
 import koziol.mooo.com.mkb2.data.KBHold
 
-data class ClimbsUiState(
+data class FilterClimbsUiState(
     var minGrade: Int = 1,
-    var maxGrade: Int = 20,
+    var maxGrade: Int = 8,
     var gradeDeviation: Float = 0f,
 
     var minRating: Float = 1f,

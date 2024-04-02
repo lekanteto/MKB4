@@ -10,6 +10,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MKB2"
+        android:enableOnBackInvokedCallback="true"
         >
         <activity
             android:name=".MainActivity"
