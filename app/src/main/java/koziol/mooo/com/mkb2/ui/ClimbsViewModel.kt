@@ -14,15 +14,10 @@ import koziol.mooo.com.mkb2.data.ClimbRepository
 
 class ClimbsViewModel : ViewModel() {
     var climbsList = mutableStateListOf<Climb>()
-    private lateinit var climbsRepo: ClimbRepository
 
     init {
         CoroutineScope(Dispatchers.IO).launch {
-            climbsRepo = ClimbRepository()
-            climbsList.addAll(climbsRepo.getFilteredClimbs(BaseFilter()))
+            climbsList.addAll(ClimbRepository.getClimbsWithCurrentFilter())
         }
     }
-
-    private val _uiState = MutableStateFlow(FilterClimbsUiState())
-    val uiState: StateFlow<FilterClimbsUiState> = _uiState.asStateFlow()
 }

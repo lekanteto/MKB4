@@ -28,40 +28,16 @@ fun MainSurface() {
 
             val destinations = mapOf(
                 "climbs" to { navController.navigate("climbs") },
-                "climbsFilter" to { navController.navigate("climbs") },
+                //"climbsFilter" to { navController.navigate("climbs") },
                 "climbsFilter" to { navController.navigate("climbsFilter") },
+                "displayBoard" to {navController.navigate("displayBoard")}
             )
 
             composable("climbs") { ListClimbsScreen(destinations = destinations) }
-            composable("test") { TestDestination() }
+            composable("displayBoard") { BoardScreen(destinations = destinations) }
             composable("climbsFilter") { FilterClimbsScreen(destinations = destinations) }
             // Add more destinations similarly.
 
         }
     }
-}
-
-@Composable
-fun MainNavigationBar(
-    destinations: Map<String, () -> Unit>
-) {
-    NavigationBar {
-        NavigationBarItem(icon = {
-            Icon(
-                Icons.Outlined.Search, contentDescription = "Search Climbs"
-            )
-        },
-            label = { Text("Suche Boulder") },
-            selected = true,
-            onClick = destinations["climbs"] ?: {})
-        NavigationBarItem(icon = {
-            Icon(
-                Icons.Filled.Add, contentDescription = "Set Boulder"
-            )
-        },
-            label = { Text("Erstelle Boulder") },
-            selected = false,
-            onClick = destinations["climbs"] ?: {})
-    }
-
 }

@@ -3,57 +3,13 @@ package koziol.mooo.com.mkb2.data
 import android.database.sqlite.SQLiteDatabase
 import android.util.Log
 
-class ClimbRepository() {
+object ClimbRepository {
 
-    companion object {
-        lateinit var db: SQLiteDatabase
-    }
+    lateinit var db: SQLiteDatabase
 
-    fun getClimbs(): List<Climb> {
-        val climbsList = mutableListOf<Climb>()
-        val climbsCursor = db.rawQuery(
-            """
-                SELECT name, setter_username, climb_stats.ascensionist_count, difficulty_grades.boulder_name, climb_stats.difficulty_average - round(climb_stats.difficulty_average), climb_stats.quality_average
-                FROM climbs
-                JOIN climb_stats on climb_stats.climb_uuid=climbs.uuid
-                JOIN difficulty_grades on difficulty_grades.difficulty=round(climb_stats.difficulty_average)
-                WHERE layout_id=1 AND
-                climbs.is_listed=1 AND
-                is_draft=0 AND
-                frames_count=1 AND
-                edge_left > 0 AND
-                edge_bottom > 0 AND
-                edge_right < 144 AND
-                edge_top < 156 AND
-                climb_stats.angle=40 AND
-                climb_stats.ascensionist_count>5
-                ORDER BY climb_stats.quality_average DESC, climb_stats.ascensionist_count DESC
-                LIMIT 100
-            """.trimIndent(), null
-        )
+    var currentFilter = BaseFilter()
 
-
-        if (climbsCursor.moveToFirst()) do {
-            val name = climbsCursor.getString(0)
-            val setter = climbsCursor.getString(1)
-            val ascents = climbsCursor.getInt(2)
-            val grade = climbsCursor.getString(3)
-            val gradeDeviation = climbsCursor.getFloat(4)
-            val rating = climbsCursor.getFloat(5)
-            val currentClimb = Climb(
-                name = name,
-                setter = setter,
-                grade = grade,
-                deviation = gradeDeviation,
-                rating = rating,
-                ascents = ascents
-            )
-            climbsList.add(currentClimb)
-        } while (climbsCursor.moveToNext())
-
-        climbsCursor.close()
-        return climbsList
-    }
+    var currentClimb: Climb? = null
 
     private fun convertToArgs(filter: BaseFilter): Array<String> {
         Log.d("Mkb2 convert", filter.minGradeDeviation.toString())
@@ -82,12 +38,16 @@ class ClimbRepository() {
         )
     }
 
+    fun getClimbsWithCurrentFilter(): List<Climb> {
+        return getFilteredClimbs(currentFilter)
+    }
     fun getFilteredClimbs(filter: BaseFilter): List<Climb> {
         val climbsList = mutableListOf<Climb>()
         val climbsCursor = db.rawQuery(
             """
                 SELECT climbs.uuid AS climbUuid,
                        climbs.name AS climbName,
+                       climbs.frames AS holdsString,
                        climbs.setter_username AS setterName,
                        climb_stats.ascensionist_count AS ascents,
                        difficulty_grades.boulder_name AS gradeName,
@@ -99,11 +59,11 @@ class ClimbRepository() {
                          ON climb_stats.climb_uuid = climbs.uuid
                        JOIN difficulty_grades
                          ON difficulty_grades.difficulty = Round(climb_stats.difficulty_average)
-                WHERE  layout_id = 1
+                WHERE  layout_id = 1 -- KB Original
                        AND climbs.is_listed = 1
                        AND is_draft = 0
-                       AND frames_count = 1
-                       AND edge_left > 0
+                       AND frames_count = 1 -- only boulders and no routes
+                       AND edge_left > 0 -- dimensions of 12x12 with kickboard
                        AND edge_bottom > 0
                        AND edge_right < 144
                        AND edge_top < 156
@@ -129,7 +89,7 @@ class ClimbRepository() {
                        FROM   ascents)
                        OR ?)
                        AND 
-                       (climbs.uuid NOT IN (SELECT ascents.climb_uuid -- only or exclude my ascents
+                       (climbs.uuid NOT IN (SELECT ascents.climb_uuid -- exclude my ascents
                        FROM   ascents)
                        OR ?)
                        AND 
@@ -154,6 +114,9 @@ class ClimbRepository() {
             columnIndex = climbsCursor.getColumnIndexOrThrow("setterName")
             val setter = climbsCursor.getString(columnIndex)
 
+            columnIndex = climbsCursor.getColumnIndexOrThrow("holdsString")
+            val holdsString = climbsCursor.getString(columnIndex)
+
             columnIndex = climbsCursor.getColumnIndexOrThrow("ascents")
             val ascents = climbsCursor.getInt(columnIndex)
 
@@ -162,13 +125,14 @@ class ClimbRepository() {
 
             columnIndex = climbsCursor.getColumnIndexOrThrow("gradeDeviation")
             val gradeDeviation = climbsCursor.getFloat(columnIndex)
-            Log.d("Mkb2", "Deviation: $gradeDeviation")
 
             columnIndex = climbsCursor.getColumnIndexOrThrow("rating")
             val rating = climbsCursor.getFloat(columnIndex)
+
             val currentClimb = Climb(
                 name = name,
                 setter = setter,
+                holdsString = holdsString,
                 grade = grade,
                 deviation = gradeDeviation,
                 rating = rating,

@@ -2,6 +2,8 @@ package koziol.mooo.com.mkb2.ui
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import koziol.mooo.com.mkb2.data.BaseFilter
+import koziol.mooo.com.mkb2.data.ClimbRepository
 
 class FilterClimbsViewModel(private val savedStateHandle: SavedStateHandle) : ViewModel() {
 
@@ -25,6 +27,23 @@ class FilterClimbsViewModel(private val savedStateHandle: SavedStateHandle) : Vi
         "7c/V9",
         "7c+/V10"
     )
+
+    private fun updateFilterInRepository() {
+        ClimbRepository.currentFilter = BaseFilter(
+            minRating = savedStateHandle["minRating"] ?: 1f,
+            maxRating = savedStateHandle["maxRating"] ?: 3f,
+            minGradeIndex = (savedStateHandle["minGrade"] ?: 0) + 10,
+            maxGradeIndex = (savedStateHandle["maxGrade"] ?: 0) + 10,
+            minGradeDeviation = savedStateHandle["minDeviation"] ?: -0.5f,
+            maxGradeDeviation = savedStateHandle["minDeviation"] ?: 0.5f,
+            minAscents = savedStateHandle["minAscents"] ?: 0,
+            setterName = "",
+            includeMyAscents = true,
+            onlyMyAscents = false,
+            includeMyTries = true,
+            onlyMyTries = false,
+        )
+    }
 
     val numOfAscentsOptions = arrayOf(0, 1, 5, 10, 20, 30, 50, 100, 500, 1000)
 
@@ -108,5 +127,9 @@ class FilterClimbsViewModel(private val savedStateHandle: SavedStateHandle) : Vi
         savedStateHandle["theirAscents"] = FilterOptions.INCLUDE
         savedStateHandle["theirTries"] = FilterOptions.INCLUDE
         savedStateHandle["theirBoulders"] = FilterOptions.INCLUDE
+    }
+
+    fun applyAllFilters() {
+        updateFilterInRepository()
     }
 }

@@ -7,7 +7,10 @@ object HoldsRepository {
 
     private lateinit var myDb: SQLiteDatabase
 
-    private lateinit var allHoldsList: List<KBHold>
+    private lateinit var allHoldsMap: Map<Int, KBHold>
+    fun getAllHoldsMap(): Map<Int, KBHold> {
+        return allHoldsMap
+    }
 
     private val holdRoles = mapOf(
         StartHold.id to StartHold,
@@ -18,11 +21,11 @@ object HoldsRepository {
 
     fun setup(db: SQLiteDatabase) {
         myDb = db
-        allHoldsList = getAllHolds()
+        allHoldsMap = getAllHolds()
     }
 
-    private fun getAllHolds(): List<KBHold> {
-        val holdsList = mutableListOf<KBHold>()
+    private fun getAllHolds(): Map<Int, KBHold> {
+        val holdsMap = HashMap<Int, KBHold>()
         val holdsCursor = myDb.rawQuery(
             """
                 SELECT placements.id, holes.x, holes.y, placement_roles.id
@@ -47,27 +50,27 @@ object HoldsRepository {
             x = holdsCursor.getInt(1)
             y = holdsCursor.getInt(2)
             role = holdRoles[holdsCursor.getInt(3)] ?: MiddleHold
-            holdsList.add(KBHold(id, x, y, role))
+            holdsMap[id] = KBHold(id, x, y, role)
             holdsCursor.moveToNext()
         }
         holdsCursor.close()
-        return holdsList
+        return holdsMap
     }
 
     fun getNearestHold(offset: Offset): KBHold {
-        var nearestHold = allHoldsList.first()
-        var nearestDistance = 2F
-        allHoldsList.forEach {
-            val currentDistance = getDistance(offset, it)
+        lateinit var nearestHold: KBHold
+        var nearestDistance = Float.MAX_VALUE
+        allHoldsMap.forEach {val hold = it.value
+            val currentDistance = getDistanceSquared(offset, hold)
             if (currentDistance < nearestDistance) {
-                nearestHold = it
+                nearestHold = hold
                 nearestDistance = currentDistance
             }
         }
         return nearestHold
     }
 
-    private fun getDistance(point: Offset, hold: KBHold): Float {
+    private fun getDistanceSquared(point: Offset, hold: KBHold): Float {
         return point.minus(Offset(hold.xFraction, hold.yFraction)).getDistanceSquared()
     }
 }
