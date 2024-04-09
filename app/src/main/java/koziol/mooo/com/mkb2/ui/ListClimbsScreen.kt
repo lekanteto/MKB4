@@ -5,8 +5,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
@@ -25,17 +27,21 @@ import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TextFieldDefaults.indicatorLine
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -47,13 +53,28 @@ import koziol.mooo.com.mkb2.data.ClimbRepository
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ListClimbsScreen(destinations: Map<String, () -> Unit>) {
+fun ListClimbsScreen(
+    destinations: Map<String, () -> Unit>, climbsViewModel: ClimbsViewModel = viewModel()
+) {
 
     Scaffold(topBar = { ListClimbsTopBar(destinations) }, bottomBar = {
         ClimbsBottomBar(destinations)
     }, content = { innerPadding ->
-        Box(modifier = Modifier.padding(innerPadding)) {
-            ClimbsList(destinations)
+        Column(
+            modifier = Modifier
+                .padding(innerPadding)
+                .verticalScroll(rememberScrollState())
+        ) {
+            climbsViewModel.climbsList.forEach { climb: Climb ->
+                ListItem(modifier = Modifier.clickable(onClick = {
+                    Log.d("Mkb2", "Climb in list tapped")
+                    ClimbRepository.currentClimb = climb
+                    destinations["displayBoard"]?.invoke()
+                }),
+                    headlineContent = { Text(climb.name) },
+                    supportingContent = { Text(climb.grade) })
+                HorizontalDivider()
+            }
         }
     })
 }
@@ -89,39 +110,22 @@ fun ClimbsBottomBar(
     })
 }
 
-@Composable
-fun ClimbsList(
-    destinations: Map<String, () -> Unit>, climbsViewModel: ClimbsViewModel = viewModel()
-) {
-
-    Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-        climbsViewModel.climbsList.forEach { climb: Climb ->
-            ListItem(modifier = Modifier.clickable(onClick = {
-                Log.d("Mkb2", "Climb in list tapped")
-                ClimbRepository.currentClimb = climb
-                destinations["displayBoard"]?.invoke()
-            }),
-                headlineContent = { Text(climb.name) },
-                supportingContent = { Text(climb.grade) })
-            HorizontalDivider()
-        }
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListClimbsTopBar(
     destinations: Map<String, () -> Unit>,
 ) {
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+
     LargeTopAppBar(colors = TopAppBarDefaults.topAppBarColors(
         containerColor = MaterialTheme.colorScheme.primaryContainer,
         titleContentColor = MaterialTheme.colorScheme.primary,
 
-        ), title = {
+        ), scrollBehavior = scrollBehavior, title = {
+/*
         var text by remember { mutableStateOf("") }
 
-        OutlinedTextField(
-            modifier = Modifier.fillMaxWidth(),
+        OutlinedTextField(modifier = Modifier.fillMaxWidth(),
             singleLine = true,
             value = text,
             onValueChange = { text = it },
@@ -131,17 +135,28 @@ fun ListClimbsTopBar(
 
                     painter = painterResource(id = R.drawable.outline_cancel_24),
                     contentDescription = null,
-                    modifier = Modifier.clickable(onClick = {text = ""}),
+                    modifier = Modifier.clickable(onClick = { text = "" }),
                 )
-            }
-        )
-
+            })
+*/
+Text("MKB2")
     }, navigationIcon = {
         IconButton(onClick = { /*TODO*/ }, content = {
-            Icon(
-                painter = painterResource(id = R.drawable.outline_bookmarks_24),
-                contentDescription = "Filter bookmarks"
-            )
+            OutlinedIconButton(onClick = {}, content = {
+                Icon(
+                    painter = painterResource(id = R.drawable.outline_bookmarks_24),
+                    contentDescription = "Filter bookmarks"
+                )
+            })
         })
-    }, actions = {})
+    }, actions = {
+        OutlinedButton(onClick = { /* do something */ }) {
+            Text("40°")
+            Spacer(modifier = Modifier.size(10.dp))
+            Icon(
+                painter = painterResource(id = R.drawable.outline_screen_rotation_24),
+                contentDescription = "Localized description"
+            )
+        }
+    })
 }
