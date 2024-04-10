@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Face
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.FloatingActionButton
@@ -108,6 +109,16 @@ fun BoardBottomBar(
         },
             //label = { Text("Log attempt") },
             selected = false, onClick = { })
+
+        NavigationBarItem(icon = {
+            Icon(
+                imageVector = Icons.Outlined.Search,
+                contentDescription = "Search Boulder"
+            )
+        },
+            //label = { Text("Log attempt") },
+            selected = false, onClick = { })
+
         NavigationBarItem(icon = {
             Icon(
                 painter = painterResource(id = R.drawable.mountain_flag_fill0_wght400_grad0_opsz24),
@@ -116,6 +127,7 @@ fun BoardBottomBar(
         },
             //label = { Text("Log attempt") },
             selected = false, onClick = { })
+
         NavigationBarItem(icon = {
             Icon(
                 painter = painterResource(id = R.drawable.mountain_flag_24px),
