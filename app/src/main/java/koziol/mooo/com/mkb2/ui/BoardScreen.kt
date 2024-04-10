@@ -33,6 +33,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.IntSize
 import koziol.mooo.com.mkb2.R
@@ -100,42 +101,44 @@ fun BoardScreen(destinations: Map<String, () -> Unit>) {
 fun BoardBottomBar(
     destinations: Map<String, () -> Unit>
 ) {
+    val uriHandler = LocalUriHandler.current
+
     BottomAppBar(actions = {
         NavigationBarItem(icon = {
             Icon(
                 painter = painterResource(id = R.drawable.outline_bookmark_add_24),
                 contentDescription = "Set Boulder"
             )
-        },
-            //label = { Text("Log attempt") },
-            selected = false, onClick = { })
+        }, selected = false, onClick = { })
 
         NavigationBarItem(icon = {
             Icon(
-                imageVector = Icons.Outlined.Search,
-                contentDescription = "Search Boulder"
+                imageVector = Icons.Outlined.Search, contentDescription = "Search Boulder"
             )
-        },
-            //label = { Text("Log attempt") },
-            selected = false, onClick = { })
+        }, selected = false, onClick = { })
 
         NavigationBarItem(icon = {
             Icon(
                 painter = painterResource(id = R.drawable.mountain_flag_fill0_wght400_grad0_opsz24),
                 contentDescription = "Set Boulder"
             )
-        },
-            //label = { Text("Log attempt") },
-            selected = false, onClick = { })
+        }, selected = false, onClick = { })
 
         NavigationBarItem(icon = {
             Icon(
                 painter = painterResource(id = R.drawable.mountain_flag_24px),
                 contentDescription = "Log ascent"
             )
+        }, selected = false, onClick = { })
+
+        NavigationBarItem(icon = {
+            Icon(
+                painter = painterResource(id = R.drawable.outline_open_in_new_24),
+                contentDescription = "Open in Kilter"
+            )
         },
-            //label = { Text("Log attempt") },
-            selected = false, onClick = { })
+            selected = false,
+            onClick = { uriHandler.openUri("https://kilterboardapp.com/climbs/${ClimbRepository.currentClimb?.uuid}") })
 
     }, floatingActionButton = {
         FloatingActionButton(

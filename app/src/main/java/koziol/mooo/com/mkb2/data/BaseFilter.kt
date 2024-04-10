@@ -1,7 +1,7 @@
 package koziol.mooo.com.mkb2.data
 
 data class BaseFilter(
-    val name: String = "Cross",
+    var name: String = "",
     val minRating: Float = 1f,
     val maxRating: Float = 3f,
     val minGradeIndex: Int = 10,
@@ -15,4 +15,4 @@ data class BaseFilter(
     val includeMyTries: Boolean = true,
     val onlyMyTries: Boolean = false,
 
-)
+    )

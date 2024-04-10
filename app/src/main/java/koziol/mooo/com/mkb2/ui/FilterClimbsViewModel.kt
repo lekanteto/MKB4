@@ -35,8 +35,8 @@ class FilterClimbsViewModel(private val savedStateHandle: SavedStateHandle) : Vi
             minGradeIndex = (savedStateHandle["minGrade"] ?: 0) + 10,
             maxGradeIndex = (savedStateHandle["maxGrade"] ?: 0) + 10,
             minGradeDeviation = savedStateHandle["minDeviation"] ?: -0.5f,
-            maxGradeDeviation = savedStateHandle["minDeviation"] ?: 0.5f,
-            minAscents = savedStateHandle["minAscents"] ?: 0,
+            maxGradeDeviation = savedStateHandle["maxDeviation"] ?: 0.5f,
+            minAscents = numOfAscentsOptions[savedStateHandle["minAscents"] ?: 0] ?: 0,
             setterName = "",
             includeMyAscents = (savedStateHandle["myAscents"]
                 ?: FilterOptions.INCLUDE) == FilterOptions.INCLUDE,

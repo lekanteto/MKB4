@@ -1,23 +1,18 @@
 package koziol.mooo.com.mkb2.ui
 
 import android.util.Log
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Face
-import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -25,34 +20,19 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.ListItem
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedIconButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SmallTopAppBar
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.TextFieldDefaults.indicatorLine
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import koziol.mooo.com.mkb2.R
@@ -62,7 +42,7 @@ import koziol.mooo.com.mkb2.data.ClimbRepository
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListClimbsScreen(
-    destinations: Map<String, () -> Unit>, climbsViewModel: ClimbsViewModel = viewModel()
+    destinations: Map<String, () -> Unit>, listClimbsViewModel: ListClimbsViewModel = viewModel()
 ) {
 
     Scaffold(topBar = { ListClimbsTopBar(destinations) }, bottomBar = {
@@ -72,27 +52,53 @@ fun ListClimbsScreen(
             modifier = Modifier.padding(innerPadding)
 
         ) {
+            val searchText by listClimbsViewModel.searchText.collectAsState()
+            val isSearching by listClimbsViewModel.isSearching.collectAsState()
             TextField(
-                value = "",
-                placeholder = {Text("Search")},
-                onValueChange = {},
+                value = searchText,
+                placeholder = { Text("Search") },
+                onValueChange = listClimbsViewModel::onSearchTextChange,
                 modifier = Modifier.fillMaxWidth(),
                 //leadingIcon = {Icon(imageVector = Icons.Outlined.Search, null)},
-                trailingIcon = {Icon(painterResource(id = R.drawable.outline_cancel_24), null)},
+                trailingIcon = {
+                    Icon(painterResource(id = R.drawable.outline_cancel_24),
+                        null,
+                        modifier = Modifier.clickable { listClimbsViewModel.onSearchTextChange("") })
+                },
                 singleLine = true,
             )
-            Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-                climbsViewModel.climbsList.forEach { climb: Climb ->
-                    ListItem(modifier = Modifier.clickable(onClick = {
-                        Log.d("Mkb2", "Climb in list tapped")
-                        ClimbRepository.currentClimb = climb
-                        destinations["displayBoard"]?.invoke()
-                    }),
-                        headlineContent = { Text(climb.name) },
-                        supportingContent = { Text(climb.grade) })
-                    HorizontalDivider()
-                }
+            LazyColumn {
+                if (listClimbsViewModel.climbsList.isEmpty()) {
+                    item { Text("Nothing found") }
+                } else {
+                    items(listClimbsViewModel.climbsList) { climb ->
+                        ListItem(modifier = Modifier.clickable(onClick = {
+                            Log.d("Mkb2", "Climb in list tapped")
+                            ClimbRepository.currentClimb = climb
+                            destinations["displayBoard"]?.invoke()
+                        }),
+                            overlineContent = { Text("${climb.ascents}") },
+                            headlineContent = { Text(climb.name) },
+                            supportingContent = {
+                                Text(
+                                    String.format(
+                                        "${climb.grade} %.1f set by ${climb.setter}",
+                                        climb.deviation
+                                    )
+                                )
+                            },
 
+                            trailingContent = {
+                                Text(
+                                    String.format(
+                                        "%.2f", climb.rating
+                                    )
+                                )
+                            })
+                        HorizontalDivider()
+                    }
+
+                }
             }
         }
     })
@@ -102,31 +108,38 @@ fun ListClimbsScreen(
 fun ClimbsBottomBar(
     destinations: Map<String, () -> Unit>
 ) {
-    BottomAppBar(actions = {
-        NavigationBarItem(icon = {
-            Icon(
-                painter = painterResource(id = R.drawable.outline_new_window_24px),
-                contentDescription = "Set Boulder"
-            )
-        },
-            //label = { Text("Neuer Boulder") },
-            selected = false, onClick = { })
-        NavigationBarItem(icon = { Icon(Icons.Outlined.Face, contentDescription = "about you") },
-            //label = { Text("Mein Profil") },
-            selected = false, onClick = { })
+    BottomAppBar(
+        actions = {
+            NavigationBarItem(icon = {
+                Icon(
+                    painter = painterResource(id = R.drawable.outline_new_window_24px),
+                    contentDescription = "Set Boulder"
+                )
+            },
+                //label = { Text("Neuer Boulder") },
+                selected = false, onClick = { })
+            NavigationBarItem(icon = {
+                Icon(
+                    Icons.Outlined.Face, contentDescription = "about you"
+                )
+            },
+                //label = { Text("Mein Profil") },
+                selected = false, onClick = { })
 
-    }, floatingActionButton = {
-        FloatingActionButton(
-            onClick = destinations["climbsFilter"] ?: {},
-            containerColor = BottomAppBarDefaults.bottomAppBarFabColor,
-            elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation(),
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.outline_filter_list_24),
-                contentDescription = "Filter climbs"
-            )
-        }
-    })
+        },
+        /*        floatingActionButton = {
+                    FloatingActionButton(
+                        onClick = destinations["climbsFilter"] ?: {},
+                        containerColor = BottomAppBarDefaults.bottomAppBarFabColor,
+                        elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation(),
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.outline_filter_list_24),
+                            contentDescription = "Filter climbs"
+                        )
+                    }
+                }*/
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -134,7 +147,8 @@ fun ClimbsBottomBar(
 fun ListClimbsTopBar(
     destinations: Map<String, () -> Unit>,
 ) {
-    TopAppBar(title = {Text("MKB2")
+    TopAppBar(title = {
+        Text("MKB2")
     },
 
         navigationIcon = {
@@ -153,5 +167,12 @@ fun ListClimbsTopBar(
                     contentDescription = "Localized description"
                 )
             }
+            OutlinedIconButton(onClick = destinations["climbsFilter"] ?: {}, content = {
+                Icon(
+                    painter = painterResource(id = R.drawable.outline_filter_list_24),
+                    contentDescription = "Filter bookmarks"
+                )
+            })
+
         })
 }

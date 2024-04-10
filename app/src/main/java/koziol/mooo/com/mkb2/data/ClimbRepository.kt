@@ -2,6 +2,9 @@ package koziol.mooo.com.mkb2.data
 
 import android.database.sqlite.SQLiteDatabase
 import android.util.Log
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 object ClimbRepository {
 
@@ -41,7 +44,8 @@ object ClimbRepository {
     fun getClimbsWithCurrentFilter(): List<Climb> {
         return getFilteredClimbs(currentFilter)
     }
-    fun getFilteredClimbs(filter: BaseFilter): List<Climb> {
+
+    private fun getFilteredClimbs(filter: BaseFilter): List<Climb> {
         val climbsList = mutableListOf<Climb>()
         val climbsCursor = db.rawQuery(
             """
@@ -55,18 +59,18 @@ object ClimbRepository {
                        climb_stats.quality_average AS rating,
                        Round(climb_stats.difficulty_average) AS gradeKey
                 FROM   climbs
-                       JOIN climb_stats
+                       LEFT JOIN climb_stats
                          ON climb_stats.climb_uuid = climbs.uuid
                        JOIN difficulty_grades
                          ON difficulty_grades.difficulty = Round(climb_stats.difficulty_average)
-                WHERE  layout_id = 1 -- KB Original
+                WHERE  climbs.layout_id = 1 -- KB Original
                        AND climbs.is_listed = 1
-                       AND is_draft = 0
-                       AND frames_count = 1 -- only boulders and no routes
-                       AND edge_left > 0 -- dimensions of 12x12 with kickboard
-                       AND edge_bottom > 0
-                       AND edge_right < 144
-                       AND edge_top < 156
+                       AND climbs.is_draft = 0
+                       AND climbs.frames_count = 1 -- only boulders and no routes
+                       AND climbs.edge_left > 0 -- dimensions of 12x12 with kickboard
+                       AND climbs.edge_bottom > 0
+                       AND climbs.edge_right < 144
+                       AND climbs.edge_top < 156
                        AND climb_stats.angle = 40
                        AND
                        -- filters
@@ -108,7 +112,10 @@ object ClimbRepository {
 
 
         if (climbsCursor.moveToFirst()) do {
-            var columnIndex = climbsCursor.getColumnIndexOrThrow("climbName")
+            var columnIndex = climbsCursor.getColumnIndexOrThrow("climbUuid")
+            val uuid = climbsCursor.getString(columnIndex)
+
+            columnIndex = climbsCursor.getColumnIndexOrThrow("climbName")
             val name = climbsCursor.getString(columnIndex)
 
             columnIndex = climbsCursor.getColumnIndexOrThrow("setterName")
@@ -130,6 +137,7 @@ object ClimbRepository {
             val rating = climbsCursor.getFloat(columnIndex)
 
             val currentClimb = Climb(
+                uuid = uuid,
                 name = name,
                 setter = setter,
                 holdsString = holdsString,
