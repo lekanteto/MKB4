@@ -30,7 +30,6 @@ import koziol.mooo.com.mkb2.R
 
 @Composable
 fun KilterBard(boardViewModel: BoardViewModel = viewModel()) {
-    val boardUiState by boardViewModel.uiState.collectAsState()
 
     Column {
         // set up all transformation states
@@ -46,8 +45,7 @@ fun KilterBard(boardViewModel: BoardViewModel = viewModel()) {
             val maxY = (imageSize.height * (zoomFactor - 1) / 2f)
 
             panOffset = Offset(
-                newOffset.x.coerceIn(-maxX, maxX),
-                newOffset.y.coerceIn(-maxY, maxY)
+                newOffset.x.coerceIn(-maxX, maxX), newOffset.y.coerceIn(-maxY, maxY)
             )
             //offset += offsetChange * scale
         }
@@ -89,7 +87,5 @@ fun KilterBard(boardViewModel: BoardViewModel = viewModel()) {
                         )
                     }
                 })
-
-        Text(boardViewModel.info, Modifier.fillMaxHeight())
     }
 }

@@ -2,6 +2,7 @@ package koziol.mooo.com.mkb2.ui
 
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.geometry.Offset
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import koziol.mooo.com.mkb2.data.FinishHold
 import koziol.mooo.com.mkb2.data.FootHold
@@ -10,10 +11,12 @@ import koziol.mooo.com.mkb2.data.KBHold
 import koziol.mooo.com.mkb2.data.MiddleHold
 import koziol.mooo.com.mkb2.data.StartHold
 
-class BoardViewModel : ViewModel() {
+class FilterHoldsViewModel(private val savedStateHandle: SavedStateHandle) : ViewModel() {
+    val holds = savedStateHandle.getStateFlow("holds", "")
+
     val selectedHoldsList = mutableStateListOf<KBHold>()
 
-    fun updateHoldsSelection(tap: Offset) {
+    fun addOrUpdateHoldAt(tap: Offset) {
         val selectedHold = HoldsRepository.getNearestHold(tap)
         if (selectedHoldsList.contains(selectedHold)) {
             determineHoldColor(selectedHold)
@@ -25,12 +28,12 @@ class BoardViewModel : ViewModel() {
         }
     }
 
-    fun removeHold(tap: Offset) {
+    fun removeHoldAt(tap: Offset) {
         val selectedHold = HoldsRepository.getNearestHold(tap)
         if (selectedHoldsList.contains(selectedHold)) {
             selectedHoldsList.remove(selectedHold)
         } else {
-            updateHoldsSelection(tap)
+            addOrUpdateHoldAt(tap)
         }
     }
 
@@ -86,5 +89,9 @@ class BoardViewModel : ViewModel() {
             }
         }
         return numOfFinishHolds >= 2
+    }
+
+    fun doNothing() {
+        return
     }
 }

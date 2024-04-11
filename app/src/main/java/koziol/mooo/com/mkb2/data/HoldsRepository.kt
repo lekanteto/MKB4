@@ -8,9 +8,41 @@ object HoldsRepository {
     private lateinit var myDb: SQLiteDatabase
 
     private lateinit var allHoldsMap: Map<Int, KBHold>
-    fun getAllHoldsMap(): Map<Int, KBHold> {
-        return allHoldsMap
+
+    private fun getHoldById(id: Int): KBHold? {
+        return allHoldsMap[id]
     }
+
+    fun getHoldsListForHoldsString(frames: String): List<KBHold> {
+        val holdsList = mutableListOf<KBHold>()
+        frames.split('p').forEach { holdString ->
+            if (holdString.isNotEmpty()) {
+                val holdInfo = holdString.split('r')
+                val hold = getHoldById(holdInfo[0].toInt())
+                if (hold != null) {
+                    hold.role = when (holdInfo[1].toInt()) {
+                        12 -> StartHold
+                        13 -> MiddleHold
+                        14 -> FinishHold
+                        15 -> FootHold
+                        else -> FootHold
+                    }
+                    holdsList.add(hold)
+                }
+
+            }
+        }
+        return holdsList
+    }
+
+    fun getHoldsStringForHoldsList(holds: List<KBHold>): String {
+        var holdsString = ""
+        holds.sortedBy { it.id }.forEach { hold ->
+            holdsString += "p"+hold.id+"r"+hold.role.id
+        }
+        return holdsString
+    }
+
 
     private val holdRoles = mapOf(
         StartHold.id to StartHold,
@@ -21,10 +53,10 @@ object HoldsRepository {
 
     fun setup(db: SQLiteDatabase) {
         myDb = db
-        allHoldsMap = getAllHolds()
+        allHoldsMap = getHoldsFromDb()
     }
 
-    private fun getAllHolds(): Map<Int, KBHold> {
+    private fun getHoldsFromDb(): Map<Int, KBHold> {
         val holdsMap = HashMap<Int, KBHold>()
         val holdsCursor = myDb.rawQuery(
             """
@@ -50,6 +82,7 @@ object HoldsRepository {
             x = holdsCursor.getInt(1)
             y = holdsCursor.getInt(2)
             role = holdRoles[holdsCursor.getInt(3)] ?: MiddleHold
+
             holdsMap[id] = KBHold(id, x, y, role)
             holdsCursor.moveToNext()
         }

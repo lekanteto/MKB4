@@ -2,6 +2,7 @@ package koziol.mooo.com.mkb2.data
 
 data class BaseFilter(
     var name: String = "",
+    var holds: String = "",
     val minRating: Float = 1f,
     val maxRating: Float = 3f,
     val minGradeIndex: Int = 10,
@@ -14,5 +15,4 @@ data class BaseFilter(
     val onlyMyAscents: Boolean = false,
     val includeMyTries: Boolean = true,
     val onlyMyTries: Boolean = false,
-
     )

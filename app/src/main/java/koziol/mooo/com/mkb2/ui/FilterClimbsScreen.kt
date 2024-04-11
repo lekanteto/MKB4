@@ -103,6 +103,8 @@ fun FilterClimbsScreen(
                 onTriesChanged = filterClimbsViewModel::updateTheirTries,
                 onBouldersChanged = filterClimbsViewModel::updateTheirBoulders
             )
+
+            HoldsFilter(destinations["holdsFilter"])
         }
     })
 }
@@ -438,6 +440,29 @@ fun TheirClimbsFilter(
             },
         )
     }
+}
+
+@Composable
+fun HoldsFilter(onClick: (() -> Unit)?) {
+    FilterChip(
+        modifier = Modifier.padding(5.dp),
+        onClick = {
+            if (onClick != null) {
+                onClick()
+            }
+        },
+
+        label = {
+            Text("Filter holds")
+        },
+        selected = false,
+        leadingIcon = {Icon(
+            painter = painterResource(id = R.drawable.background_dot_small_24px),
+            contentDescription = "holds",
+            modifier = Modifier.size(FilterChipDefaults.IconSize)
+        )
+        },
+    )
 }
 
 enum class FilterOptions {

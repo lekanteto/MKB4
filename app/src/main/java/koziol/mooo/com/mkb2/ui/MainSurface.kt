@@ -28,16 +28,15 @@ fun MainSurface() {
 
             val destinations = mapOf(
                 "climbs" to { navController.navigate("climbs") },
-                //"climbsFilter" to { navController.navigate("climbs") },
                 "climbsFilter" to { navController.navigate("climbsFilter") },
-                "displayBoard" to {navController.navigate("displayBoard")}
+                "holdsFilter" to { navController.navigate("holdsFilter") },
+                "displayBoard" to {navController.navigate("displayBoard")},
             )
 
             composable("climbs") { ListClimbsScreen(destinations = destinations) }
             composable("displayBoard") { BoardScreen(destinations = destinations) }
             composable("climbsFilter") { FilterClimbsScreen(destinations = destinations) }
-            // Add more destinations similarly.
-
+            composable("holdsFilter") { FilterHoldsScreen(destinations = destinations) }
         }
     }
 }
