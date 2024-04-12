@@ -2,11 +2,8 @@ package koziol.mooo.com.mkb2.data
 
 import android.database.sqlite.SQLiteDatabase
 import android.util.Log
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
-object ClimbRepository {
+object ClimbsRepository {
 
     lateinit var db: SQLiteDatabase
 
@@ -15,8 +12,8 @@ object ClimbRepository {
     var currentClimb: Climb? = null
 
     private fun convertToArgs(filter: BaseFilter): Array<String> {
-        Log.d("Mkb2 convert", filter.minGradeDeviation.toString())
         val ignoreSetter = if (filter.setterName.isEmpty()) "1" else "0"
+        val ignoreHolds = if (filter.holds.isEmpty()) "1" else "0"
 
         val ignoreMyAscentsInfo = if (filter.onlyMyAscents) "0" else "1"
         val includeMyAscents = if (filter.includeMyAscents) "0" else "1"
@@ -25,6 +22,8 @@ object ClimbRepository {
 
         return arrayOf(
             filter.name,
+            filter.holds,
+            ignoreHolds,
             filter.minRating.toString(),
             filter.maxRating.toString(),
             filter.minGradeIndex.toString(),
@@ -39,6 +38,22 @@ object ClimbRepository {
             ignoreMyTriesInfo,
             includeMyTries
         )
+    }
+
+    fun setCurrentHoldsFilter(holds: List<KBHold>, respectHoldRoles: Boolean = true) {
+        var holdsFilter = "%"
+        holds.sortedBy { it.id }.forEach { hold ->
+            holdsFilter += "p"+hold.id+"r"
+            if (respectHoldRoles) {
+                holdsFilter += hold.role.id
+            }
+            holdsFilter += "%"
+        }
+        currentFilter.holds = holdsFilter
+    }
+
+    fun clearCurrentHoldsFilter() {
+        currentFilter.holds = ""
     }
 
     fun getClimbsWithCurrentFilter(): List<Climb> {
@@ -65,29 +80,24 @@ object ClimbRepository {
                          ON difficulty_grades.difficulty = Round(climb_stats.difficulty_average)
                 WHERE  climbs.layout_id = 1 -- KB Original
                        AND climbs.is_listed = 1
-                       AND climbs.is_draft = 0
+                       AND climbs.is_draft = 0 -- no drafts for now
                        AND climbs.frames_count = 1 -- only boulders and no routes
                        AND climbs.edge_left > 0 -- dimensions of 12x12 with kickboard
                        AND climbs.edge_bottom > 0
                        AND climbs.edge_right < 144
                        AND climbs.edge_top < 156
                        AND climb_stats.angle = 40
-                       AND
                        -- filters
-                       climbs.name LIKE '%' || ? || '%' -- name
-                       AND
-                       climb_stats.quality_average BETWEEN ? AND ? -- min/max rating
-                       AND 
-                       climb_stats.display_difficulty BETWEEN ? AND ? -- min/max difficulty
+                       AND climbs.name LIKE '%' || ? || '%' -- name
+                       AND (climbs.frames LIKE ? OR ?)
+                       AND climb_stats.quality_average BETWEEN ? AND ? -- min/max rating
+                       AND climb_stats.display_difficulty BETWEEN ? AND ? -- min/max difficulty
                        AND 
                        CAST ( climb_stats.difficulty_average -
                        Round(climb_stats.difficulty_average) AS REAL ) 
                        BETWEEN ? AND ? -- min/max grade deviation
-                       AND 
-                       climb_stats.ascensionist_count >= ? -- min num of ascents
-                       AND 
-                       (climbs.setter_username = ? -- set by
-                       OR ?)
+                       AND climb_stats.ascensionist_count >= ? -- min num of ascents
+                       AND (climbs.setter_username = ? OR ?) -- set by
                        AND 
                        (climbs.uuid IN (SELECT ascents.climb_uuid -- only my ascents
                        FROM   ascents)
@@ -97,12 +107,10 @@ object ClimbRepository {
                        FROM   ascents)
                        OR ?)
                        AND 
-                       (climbs.uuid IN (SELECT bids.climb_uuid -- only my tries
-                       FROM   bids)
+                       (climbs.uuid IN (SELECT bids.climb_uuid FROM bids)  -- only my tries
                        OR ?)
                        AND 
-                       (climbs.uuid NOT IN (SELECT bids.climb_uuid -- exclude my tries
-                       FROM   bids)
+                       (climbs.uuid NOT IN (SELECT bids.climb_uuid FROM bids)  -- exclude my tries
                        OR ?)
                 ORDER  BY climb_stats.quality_average DESC,
                           climb_stats.ascensionist_count DESC

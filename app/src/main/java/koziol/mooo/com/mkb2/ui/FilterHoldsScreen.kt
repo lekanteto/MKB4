@@ -1,5 +1,6 @@
 package koziol.mooo.com.mkb2.ui
 
+import androidx.activity.ComponentActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.rememberTransformableState
@@ -30,6 +31,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.IntSize
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -37,11 +39,14 @@ import koziol.mooo.com.mkb2.R
 
 @Composable
 fun FilterHoldsScreen(
-    destinations: Map<String, () -> Unit>, filterHoldsViewModel: FilterHoldsViewModel = viewModel()
+    destinations: Map<String, () -> Unit>,
+    filterViewModel: FilterViewModel = viewModel(LocalContext.current as ComponentActivity)
 ) {
     Scaffold(topBar = {
         FilterHoldsTopBar(
-            destinations, filterHoldsViewModel::doNothing, filterHoldsViewModel::unselectAllHolds
+            destinations,
+            onApplyFilter = filterViewModel::applyHoldsFilter,
+            onClearFilter = filterViewModel::unselectAllHolds
         )
     }, content = { innerPadding ->
         Column(
@@ -77,13 +82,13 @@ fun FilterHoldsScreen(
                     .transformable(state = state)
                     .pointerInput(Unit) {
                         detectTapGestures(onTap = { offset ->
-                            filterHoldsViewModel.addOrUpdateHoldAt(
+                            filterViewModel.addOrUpdateHoldAt(
                                 Offset(
                                     offset.x / size.width, offset.y / size.height
                                 )
                             )
                         }, onLongPress = { offset ->
-                            filterHoldsViewModel.removeHoldAt(
+                            filterViewModel.removeHoldAt(
                                 Offset(
                                     offset.x / size.width, offset.y / size.height
                                 )
@@ -92,7 +97,7 @@ fun FilterHoldsScreen(
                     }
                     .drawWithContent {
                         drawContent()
-                        for (hold in filterHoldsViewModel.selectedHoldsList) {
+                        for (hold in filterViewModel.selectedHoldsList) {
                             drawCircle(
                                 color = Color(hold.role.screenColor), 25F, center = Offset(
                                     hold.xFraction * size.width, hold.yFraction * size.height

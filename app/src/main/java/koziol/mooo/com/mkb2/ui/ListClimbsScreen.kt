@@ -9,15 +9,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Face
 import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
@@ -36,8 +31,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import koziol.mooo.com.mkb2.R
-import koziol.mooo.com.mkb2.data.Climb
-import koziol.mooo.com.mkb2.data.ClimbRepository
+import koziol.mooo.com.mkb2.data.ClimbsRepository
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -74,7 +68,7 @@ fun ListClimbsScreen(
                     items(listClimbsViewModel.climbsList) { climb ->
                         ListItem(modifier = Modifier.clickable(onClick = {
                             Log.d("Mkb2", "Climb in list tapped")
-                            ClimbRepository.currentClimb = climb
+                            ClimbsRepository.currentClimb = climb
                             destinations["displayBoard"]?.invoke()
                         }),
                             overlineContent = { Text("${climb.ascents}") },

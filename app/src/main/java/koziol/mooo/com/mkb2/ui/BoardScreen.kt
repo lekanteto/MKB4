@@ -1,14 +1,11 @@
 package koziol.mooo.com.mkb2.ui
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Face
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.BottomAppBarDefaults
@@ -31,13 +28,12 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.IntSize
 import koziol.mooo.com.mkb2.R
-import koziol.mooo.com.mkb2.data.ClimbRepository
+import koziol.mooo.com.mkb2.data.ClimbsRepository
 
 
 @Composable
@@ -47,7 +43,7 @@ fun BoardScreen(destinations: Map<String, () -> Unit>) {
     }) { paddingValues ->
         Column(modifier = Modifier.padding(paddingValues)) {
             Text(
-                text = ClimbRepository.currentClimb?.name ?: "Climb not found"
+                text = ClimbsRepository.currentClimb?.name ?: "Climb not found"
             )
             // set up all transformation states
             var zoomFactor by remember { mutableFloatStateOf(1f) }
@@ -81,7 +77,7 @@ fun BoardScreen(destinations: Map<String, () -> Unit>) {
                     .transformable(state = state)
                     .drawWithContent {
                         drawContent()
-                        val climb = ClimbRepository.currentClimb
+                        val climb = ClimbsRepository.currentClimb
                         if (climb != null) {
                             for (hold in climb.getHoldsList()) {
                                 drawCircle(
@@ -138,7 +134,7 @@ fun BoardBottomBar(
             )
         },
             selected = false,
-            onClick = { uriHandler.openUri("https://kilterboardapp.com/climbs/${ClimbRepository.currentClimb?.uuid}") })
+            onClick = { uriHandler.openUri("https://kilterboardapp.com/climbs/${ClimbsRepository.currentClimb?.uuid}") })
 
     }, floatingActionButton = {
         FloatingActionButton(

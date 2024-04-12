@@ -36,13 +36,11 @@ import kotlin.math.roundToInt
 @Composable
 fun FilterClimbsScreen(
     destinations: Map<String, () -> Unit>,
-    filterClimbsViewModel: FilterClimbsViewModel = viewModel(LocalContext.current as ComponentActivity)
+    filterViewModel: FilterViewModel = viewModel(LocalContext.current as ComponentActivity)
 ) {
     Scaffold(topBar = {
         FilterClimbsTopBar(
-            destinations,
-            filterClimbsViewModel::applyAllFilters,
-            filterClimbsViewModel::clearAllFilters
+            destinations, filterViewModel::applyAllFilters, filterViewModel::clearAllFilters
         )
     }, content = { innerPadding ->
         Column(
@@ -51,60 +49,63 @@ fun FilterClimbsScreen(
                 .verticalScroll(rememberScrollState())
         ) {
 
-            val min by filterClimbsViewModel.minGrade.collectAsStateWithLifecycle()
-            val max by filterClimbsViewModel.maxGrade.collectAsStateWithLifecycle()
-            val minDev by filterClimbsViewModel.minDeviation.collectAsStateWithLifecycle()
-            val maxDev by filterClimbsViewModel.maxDeviation.collectAsStateWithLifecycle()
+            val min by filterViewModel.minGrade.collectAsStateWithLifecycle()
+            val max by filterViewModel.maxGrade.collectAsStateWithLifecycle()
+            val minDev by filterViewModel.minDeviation.collectAsStateWithLifecycle()
+            val maxDev by filterViewModel.maxDeviation.collectAsStateWithLifecycle()
             GradeRangeSelector(
                 initialMin = min,
                 initialMax = max,
                 initialMinDeviation = minDev,
                 initialMaxDeviation = maxDev,
-                grades = filterClimbsViewModel.gradeNames,
-                onRangeChanged = filterClimbsViewModel::updateGradeRange,
-                onDeviationChanged = filterClimbsViewModel::updateDeviationRange
+                grades = filterViewModel.gradeNames,
+                onRangeChanged = filterViewModel::updateGradeRange,
+                onDeviationChanged = filterViewModel::updateDeviationRange
             )
 
-            val minRating by filterClimbsViewModel.minRating.collectAsStateWithLifecycle()
-            val maxRating by filterClimbsViewModel.maxRating.collectAsStateWithLifecycle()
+            val minRating by filterViewModel.minRating.collectAsStateWithLifecycle()
+            val maxRating by filterViewModel.maxRating.collectAsStateWithLifecycle()
             RatingRangeSelector(
                 initialMin = minRating,
                 initialMax = maxRating,
-                onRangeChanged = filterClimbsViewModel::updateRatingRange
+                onRangeChanged = filterViewModel::updateRatingRange
             )
 
-            val minAscents by filterClimbsViewModel.minNumOfAscents.collectAsStateWithLifecycle()
+            val minAscents by filterViewModel.minNumOfAscents.collectAsStateWithLifecycle()
             MinAscentsSelector(
                 minAscents,
-                options = filterClimbsViewModel.numOfAscentsOptions,
-                onValueChanged = filterClimbsViewModel::updateMinNumOfAscents
+                options = filterViewModel.numOfAscentsOptions,
+                onValueChanged = filterViewModel::updateMinNumOfAscents
             )
 
-            val myAscents by filterClimbsViewModel.myAscents.collectAsStateWithLifecycle()
-            val myTries by filterClimbsViewModel.myTries.collectAsStateWithLifecycle()
-            val myBoulders by filterClimbsViewModel.myBoulders.collectAsStateWithLifecycle()
+            val myAscents by filterViewModel.myAscents.collectAsStateWithLifecycle()
+            val myTries by filterViewModel.myTries.collectAsStateWithLifecycle()
+            val myBoulders by filterViewModel.myBoulders.collectAsStateWithLifecycle()
             MyClimbsFilter(
                 ascentsFilter = myAscents,
                 triesFilter = myTries,
                 boulderFilter = myBoulders,
-                onAscentsChanged = filterClimbsViewModel::updateMyAscents,
-                onTriesChanged = filterClimbsViewModel::updateMyTries,
-                onBouldersChanged = filterClimbsViewModel::updateMyBoulders
+                onAscentsChanged = filterViewModel::updateMyAscents,
+                onTriesChanged = filterViewModel::updateMyTries,
+                onBouldersChanged = filterViewModel::updateMyBoulders
             )
 
-            val theirAscents by filterClimbsViewModel.theirAscents.collectAsStateWithLifecycle()
-            val theirTries by filterClimbsViewModel.theirTries.collectAsStateWithLifecycle()
-            val theirBoulders by filterClimbsViewModel.theirBoulders.collectAsStateWithLifecycle()
+            val theirAscents by filterViewModel.theirAscents.collectAsStateWithLifecycle()
+            val theirTries by filterViewModel.theirTries.collectAsStateWithLifecycle()
+            val theirBoulders by filterViewModel.theirBoulders.collectAsStateWithLifecycle()
             TheirClimbsFilter(
                 ascentsFilter = theirAscents,
                 triesFilter = theirTries,
                 boulderFilter = theirBoulders,
-                onAscentsChanged = filterClimbsViewModel::updateTheirAscents,
-                onTriesChanged = filterClimbsViewModel::updateTheirTries,
-                onBouldersChanged = filterClimbsViewModel::updateTheirBoulders
+                onAscentsChanged = filterViewModel::updateTheirAscents,
+                onTriesChanged = filterViewModel::updateTheirTries,
+                onBouldersChanged = filterViewModel::updateTheirBoulders
             )
 
-            HoldsFilter(destinations["holdsFilter"])
+            HoldsFilter(
+                destinations["holdsFilter"],
+                isSelected = filterViewModel.selectedHoldsList.isNotEmpty()
+            )
         }
     })
 }
@@ -443,7 +444,7 @@ fun TheirClimbsFilter(
 }
 
 @Composable
-fun HoldsFilter(onClick: (() -> Unit)?) {
+fun HoldsFilter(onClick: (() -> Unit)?, isSelected: Boolean) {
     FilterChip(
         modifier = Modifier.padding(5.dp),
         onClick = {
@@ -455,12 +456,13 @@ fun HoldsFilter(onClick: (() -> Unit)?) {
         label = {
             Text("Filter holds")
         },
-        selected = false,
-        leadingIcon = {Icon(
-            painter = painterResource(id = R.drawable.background_dot_small_24px),
-            contentDescription = "holds",
-            modifier = Modifier.size(FilterChipDefaults.IconSize)
-        )
+        selected = isSelected,
+        leadingIcon = {
+            Icon(
+                painter = painterResource(id = R.drawable.background_dot_small_24px),
+                contentDescription = "holds",
+                modifier = Modifier.size(FilterChipDefaults.IconSize)
+            )
         },
     )
 }
