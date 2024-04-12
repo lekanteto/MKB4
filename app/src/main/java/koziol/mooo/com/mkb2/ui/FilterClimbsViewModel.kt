@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import koziol.mooo.com.mkb2.data.BaseFilter
 import koziol.mooo.com.mkb2.data.ClimbRepository
+import kotlin.math.roundToInt
 
 class FilterClimbsViewModel(private val savedStateHandle: SavedStateHandle) : ViewModel() {
 
@@ -30,12 +31,12 @@ class FilterClimbsViewModel(private val savedStateHandle: SavedStateHandle) : Vi
 
     private fun updateFilterInRepository() {
         ClimbRepository.currentFilter = BaseFilter(
-            minRating = savedStateHandle["minRating"] ?: 1f,
-            maxRating = savedStateHandle["maxRating"] ?: 3f,
+            minRating = ((savedStateHandle["minRating"] ?: 1f) * 10).roundToInt() / 10f,
+            maxRating = ((savedStateHandle["maxRating"] ?: 3f) * 10).roundToInt() / 10f,
             minGradeIndex = (savedStateHandle["minGrade"] ?: 0) + 10,
             maxGradeIndex = (savedStateHandle["maxGrade"] ?: 0) + 10,
-            minGradeDeviation = savedStateHandle["minDeviation"] ?: -0.5f,
-            maxGradeDeviation = savedStateHandle["maxDeviation"] ?: 0.5f,
+            minGradeDeviation = ((savedStateHandle["minDeviation"] ?: -0.5f) * 10).roundToInt() / 10f,
+            maxGradeDeviation = ((savedStateHandle["maxDeviation"] ?: 0.5f) * 10).roundToInt() / 10f,
             minAscents = numOfAscentsOptions[savedStateHandle["minAscents"] ?: 0] ?: 0,
             setterName = "",
             includeMyAscents = (savedStateHandle["myAscents"]

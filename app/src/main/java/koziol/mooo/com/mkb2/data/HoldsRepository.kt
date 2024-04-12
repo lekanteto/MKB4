@@ -21,11 +21,11 @@ object HoldsRepository {
                 val hold = getHoldById(holdInfo[0].toInt())
                 if (hold != null) {
                     hold.role = when (holdInfo[1].toInt()) {
-                        12 -> StartHold
-                        13 -> MiddleHold
-                        14 -> FinishHold
-                        15 -> FootHold
-                        else -> FootHold
+                        12 -> HoldRole.StartHold
+                        13 -> HoldRole.MiddleHold
+                        14 -> HoldRole.FinishHold
+                        15 -> HoldRole.FootHold
+                        else -> HoldRole.FootHold
                     }
                     holdsList.add(hold)
                 }
@@ -45,10 +45,10 @@ object HoldsRepository {
 
 
     private val holdRoles = mapOf(
-        StartHold.id to StartHold,
-        MiddleHold.id to MiddleHold,
-        FinishHold.id to FinishHold,
-        FootHold.id to FootHold
+        HoldRole.StartHold.id to HoldRole.StartHold,
+        HoldRole.MiddleHold.id to HoldRole.MiddleHold,
+        HoldRole.FinishHold.id to HoldRole.FinishHold,
+        HoldRole.FootHold.id to HoldRole.FootHold
     )
 
     fun setup(db: SQLiteDatabase) {
@@ -81,7 +81,7 @@ object HoldsRepository {
             id = holdsCursor.getInt(0)
             x = holdsCursor.getInt(1)
             y = holdsCursor.getInt(2)
-            role = holdRoles[holdsCursor.getInt(3)] ?: MiddleHold
+            role = holdRoles[holdsCursor.getInt(3)] ?: HoldRole.MiddleHold
 
             holdsMap[id] = KBHold(id, x, y, role)
             holdsCursor.moveToNext()

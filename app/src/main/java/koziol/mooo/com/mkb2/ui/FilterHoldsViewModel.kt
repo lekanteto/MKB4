@@ -4,17 +4,18 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import koziol.mooo.com.mkb2.data.FinishHold
-import koziol.mooo.com.mkb2.data.FootHold
+import koziol.mooo.com.mkb2.data.HoldRole
 import koziol.mooo.com.mkb2.data.HoldsRepository
 import koziol.mooo.com.mkb2.data.KBHold
-import koziol.mooo.com.mkb2.data.MiddleHold
-import koziol.mooo.com.mkb2.data.StartHold
 
 class FilterHoldsViewModel(private val savedStateHandle: SavedStateHandle) : ViewModel() {
     val holds = savedStateHandle.getStateFlow("holds", "")
 
     val selectedHoldsList = mutableStateListOf<KBHold>()
+
+    fun unselectAllHolds() {
+        selectedHoldsList.clear()
+    }
 
     fun addOrUpdateHoldAt(tap: Offset) {
         val selectedHold = HoldsRepository.getNearestHold(tap)
@@ -40,28 +41,25 @@ class FilterHoldsViewModel(private val savedStateHandle: SavedStateHandle) : Vie
     private fun determineHoldColor(hold: KBHold) {
         if (selectedHoldsList.contains(hold)) {
             hold.role = when (hold.role) {
-                is FootHold -> {
-                    if (limitOfStartHoldsReached()) MiddleHold else StartHold
+                HoldRole.FootHold -> {
+                    if (limitOfStartHoldsReached()) HoldRole.MiddleHold else HoldRole.StartHold
                 }
 
-                is StartHold -> MiddleHold
-                is MiddleHold -> {
-                    if (limitOfFinishHoldsReached()) FootHold else FinishHold
+                HoldRole.StartHold -> HoldRole.MiddleHold
+                HoldRole.MiddleHold -> {
+                    if (limitOfFinishHoldsReached()) HoldRole.FootHold else HoldRole.FinishHold
                 }
 
-                is FinishHold -> FootHold
-                else -> {
-                    hold.role
-                }
+                HoldRole.FinishHold -> HoldRole.FootHold
             }
         } else {
             hold.role = when (hold.role) {
-                is StartHold -> {
-                    if (limitOfStartHoldsReached()) MiddleHold else StartHold
+                HoldRole.StartHold -> {
+                    if (limitOfStartHoldsReached()) HoldRole.MiddleHold else HoldRole.StartHold
                 }
 
-                is FinishHold -> {
-                    if (limitOfFinishHoldsReached()) MiddleHold else FinishHold
+                HoldRole.FinishHold -> {
+                    if (limitOfFinishHoldsReached()) HoldRole.MiddleHold else HoldRole.FinishHold
                 }
 
                 else -> {
@@ -74,7 +72,7 @@ class FilterHoldsViewModel(private val savedStateHandle: SavedStateHandle) : Vie
     private fun limitOfStartHoldsReached(): Boolean {
         var numOfStartHolds = 0
         selectedHoldsList.forEach {
-            if (it.role == StartHold) {
+            if (it.role == HoldRole.StartHold) {
                 numOfStartHolds++
             }
         }
@@ -84,7 +82,7 @@ class FilterHoldsViewModel(private val savedStateHandle: SavedStateHandle) : Vie
     private fun limitOfFinishHoldsReached(): Boolean {
         var numOfFinishHolds = 0
         selectedHoldsList.forEach {
-            if (it.role == FinishHold) {
+            if (it.role == HoldRole.FinishHold) {
                 numOfFinishHolds++
             }
         }
