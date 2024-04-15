@@ -51,7 +51,8 @@ class OriginalDbOpenHelper(private val context: Context) : SQLiteOpenHelper(cont
     }
 
     override fun getWritableDatabase(): SQLiteDatabase {
-        throw RuntimeException("The $DATABASE_NAME database is not writable.")
+        installOrUpdateIfNecessary()
+        return super.getReadableDatabase()
     }
 
     override fun getReadableDatabase(): SQLiteDatabase {
@@ -70,7 +71,7 @@ class OriginalDbOpenHelper(private val context: Context) : SQLiteOpenHelper(cont
     companion object {
         const val ASSETS_PATH = "databases"
         const val DATABASE_NAME = "db-286.sqlite3"
-        const val DATABASE_VERSION = 2
+        const val DATABASE_VERSION = 5
     }
 
 }

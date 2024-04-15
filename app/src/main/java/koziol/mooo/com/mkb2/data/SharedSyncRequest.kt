@@ -9,7 +9,7 @@ data class SharedSyncRequest(
     @SerialName("client")
     val client: Client = Client(),
     @SerialName("GET")
-    val gET: GET = GET()
+    val gET: GET,
 ) {
     @Serializable
     data class Client(
@@ -26,7 +26,7 @@ data class SharedSyncRequest(
     @Serializable
     data class GET(
         @SerialName("query")
-        val query: Query = Query()
+        val query: Query,
     ) {
         @Serializable
         data class Query(
@@ -39,16 +39,13 @@ data class SharedSyncRequest(
             @SerialName("syncs")
             val syncs: Syncs,
             @SerialName("tables")
-            val tables: List<String>,
-            @SerialName("user_id")
-            val userId: Int
+            val tables: List<String> = listOf("climbs", "climb_stats"),
+            //val tables: List<String> = listOf("climbs", "climb_stats"),
         ) {
             @Serializable
             data class Syncs(
                 @SerialName("shared_syncs")
                 val sharedSyncs: List<SharedSync>,
-                @SerialName("user_syncs")
-                val userSyncs: List<UserSync>
             ) {
                 @Serializable
                 data class SharedSync(
@@ -56,16 +53,6 @@ data class SharedSyncRequest(
                     val lastSynchronizedAt: String,
                     @SerialName("table_name")
                     val tableName: String
-                )
-
-                @Serializable
-                data class UserSync(
-                    @SerialName("last_synchronized_at")
-                    val lastSynchronizedAt: String,
-                    @SerialName("table_name")
-                    val tableName: String,
-                    @SerialName("user_id")
-                    val userId: Int
                 )
             }
         }

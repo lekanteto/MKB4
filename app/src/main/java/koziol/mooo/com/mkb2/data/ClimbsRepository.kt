@@ -1,7 +1,6 @@
 package koziol.mooo.com.mkb2.data
 
 import android.database.sqlite.SQLiteDatabase
-import android.util.Log
 
 object ClimbsRepository {
 
@@ -9,16 +8,16 @@ object ClimbsRepository {
 
     var currentFilter = BaseFilter()
 
-    var currentClimb: Climb? = null
+    var currentClimb: Climb = Climb()
 
     private fun convertToArgs(filter: BaseFilter): Array<String> {
         val ignoreSetter = if (filter.setterName.isEmpty()) "1" else "0"
         val ignoreHolds = if (filter.holds.isEmpty()) "1" else "0"
 
-        val ignoreMyAscentsInfo = if (filter.onlyMyAscents) "0" else "1"
-        val includeMyAscents = if (filter.includeMyAscents) "0" else "1"
-        val ignoreMyTriesInfo = if (filter.onlyMyTries) "0" else "1"
-        val includeMyTries = if (filter.includeMyTries) "0" else "1"
+        val includeNotClimbedByMe = if (filter.onlyMyAscents) "0" else "1"
+        val includeMyAscents = if (filter.includeMyAscents) "1" else "0"
+        val includeNotTriedByMe = if (filter.onlyMyTries) "0" else "1"
+        val includeMyTries = if (filter.includeMyTries) "1" else "0"
 
         return arrayOf(
             filter.name,
@@ -33,9 +32,9 @@ object ClimbsRepository {
             filter.minAscents.toString(),
             filter.setterName,
             ignoreSetter,
-            ignoreMyAscentsInfo,
+            includeNotClimbedByMe,
             includeMyAscents,
-            ignoreMyTriesInfo,
+            includeNotTriedByMe,
             includeMyTries
         )
     }
@@ -62,8 +61,9 @@ object ClimbsRepository {
 
     private fun getFilteredClimbs(filter: BaseFilter): List<Climb> {
         val climbsList = mutableListOf<Climb>()
-        val climbsCursor = db.rawQuery(
-            """
+        if (this::db.isInitialized) {
+            val climbsCursor = db.rawQuery(
+                """
                 SELECT climbs.uuid AS climbUuid,
                        climbs.name AS climbName,
                        climbs.frames AS holdsString,
@@ -100,12 +100,10 @@ object ClimbsRepository {
                        AND (climbs.setter_username = ? OR ?) -- set by
                        AND 
                        (climbs.uuid IN (SELECT ascents.climb_uuid -- only my ascents
-                       FROM   ascents)
-                       OR ?)
+                       FROM ascents) OR ?)
                        AND 
                        (climbs.uuid NOT IN (SELECT ascents.climb_uuid -- exclude my ascents
-                       FROM   ascents)
-                       OR ?)
+                       FROM ascents) OR ?)
                        AND 
                        (climbs.uuid IN (SELECT bids.climb_uuid FROM bids)  -- only my tries
                        OR ?)
@@ -116,48 +114,49 @@ object ClimbsRepository {
                           climb_stats.ascensionist_count DESC
                 LIMIT  100 
             """.trimIndent(), convertToArgs(filter)
-        )
-
-
-        if (climbsCursor.moveToFirst()) do {
-            var columnIndex = climbsCursor.getColumnIndexOrThrow("climbUuid")
-            val uuid = climbsCursor.getString(columnIndex)
-
-            columnIndex = climbsCursor.getColumnIndexOrThrow("climbName")
-            val name = climbsCursor.getString(columnIndex)
-
-            columnIndex = climbsCursor.getColumnIndexOrThrow("setterName")
-            val setter = climbsCursor.getString(columnIndex)
-
-            columnIndex = climbsCursor.getColumnIndexOrThrow("holdsString")
-            val holdsString = climbsCursor.getString(columnIndex)
-
-            columnIndex = climbsCursor.getColumnIndexOrThrow("ascents")
-            val ascents = climbsCursor.getInt(columnIndex)
-
-            columnIndex = climbsCursor.getColumnIndexOrThrow("gradeName")
-            val grade = climbsCursor.getString(columnIndex)
-
-            columnIndex = climbsCursor.getColumnIndexOrThrow("gradeDeviation")
-            val gradeDeviation = climbsCursor.getFloat(columnIndex)
-
-            columnIndex = climbsCursor.getColumnIndexOrThrow("rating")
-            val rating = climbsCursor.getFloat(columnIndex)
-
-            val currentClimb = Climb(
-                uuid = uuid,
-                name = name,
-                setter = setter,
-                holdsString = holdsString,
-                grade = grade,
-                deviation = gradeDeviation,
-                rating = rating,
-                ascents = ascents
             )
-            climbsList.add(currentClimb)
-        } while (climbsCursor.moveToNext())
 
-        climbsCursor.close()
+
+            if (climbsCursor.moveToFirst()) do {
+                var columnIndex = climbsCursor.getColumnIndexOrThrow("climbUuid")
+                val uuid = climbsCursor.getString(columnIndex)
+
+                columnIndex = climbsCursor.getColumnIndexOrThrow("climbName")
+                val name = climbsCursor.getString(columnIndex)
+
+                columnIndex = climbsCursor.getColumnIndexOrThrow("setterName")
+                val setter = climbsCursor.getString(columnIndex)
+
+                columnIndex = climbsCursor.getColumnIndexOrThrow("holdsString")
+                val holdsString = climbsCursor.getString(columnIndex)
+
+                columnIndex = climbsCursor.getColumnIndexOrThrow("ascents")
+                val ascents = climbsCursor.getInt(columnIndex)
+
+                columnIndex = climbsCursor.getColumnIndexOrThrow("gradeName")
+                val grade = climbsCursor.getString(columnIndex)
+
+                columnIndex = climbsCursor.getColumnIndexOrThrow("gradeDeviation")
+                val gradeDeviation = climbsCursor.getFloat(columnIndex)
+
+                columnIndex = climbsCursor.getColumnIndexOrThrow("rating")
+                val rating = climbsCursor.getFloat(columnIndex)
+
+                val currentClimb = Climb(
+                    uuid = uuid,
+                    name = name,
+                    setter = setter,
+                    holdsString = holdsString,
+                    grade = grade,
+                    deviation = gradeDeviation,
+                    rating = rating,
+                    ascents = ascents
+                )
+                climbsList.add(currentClimb)
+            } while (climbsCursor.moveToNext())
+
+            climbsCursor.close()
+        }
         return climbsList
     }
 }

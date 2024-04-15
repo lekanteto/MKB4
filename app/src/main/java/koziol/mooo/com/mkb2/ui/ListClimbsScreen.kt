@@ -48,6 +48,7 @@ fun ListClimbsScreen(
         ) {
             val searchText by listClimbsViewModel.searchText.collectAsState()
             val isSearching by listClimbsViewModel.isSearching.collectAsState()
+            val climbs by listClimbsViewModel.climbList.collectAsState()
             TextField(
                 value = searchText,
                 placeholder = { Text("Search") },
@@ -62,10 +63,10 @@ fun ListClimbsScreen(
                 singleLine = true,
             )
             LazyColumn {
-                if (listClimbsViewModel.climbsList.isEmpty()) {
+                if (climbs.isEmpty()) {
                     item { Text("Nothing found") }
                 } else {
-                    items(listClimbsViewModel.climbsList) { climb ->
+                    items(climbs) { climb ->
                         ListItem(modifier = Modifier.clickable(onClick = {
                             Log.d("Mkb2", "Climb in list tapped")
                             ClimbsRepository.currentClimb = climb

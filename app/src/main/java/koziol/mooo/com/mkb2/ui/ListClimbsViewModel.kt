@@ -1,6 +1,5 @@
 package koziol.mooo.com.mkb2.ui
 
-import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CoroutineScope
@@ -9,12 +8,14 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import koziol.mooo.com.mkb2.data.Climb
 import koziol.mooo.com.mkb2.data.ClimbsRepository
 
 class ListClimbsViewModel : ViewModel() {
-    var climbsList = mutableStateListOf<Climb>()
+    private var _climbsList = MutableStateFlow(emptyList<Climb>())
+    var climbList = _climbsList.asStateFlow()
 
     private val _searchText = MutableStateFlow("")
     val searchText = _searchText.asStateFlow()
@@ -24,7 +25,7 @@ class ListClimbsViewModel : ViewModel() {
 
     init {
         CoroutineScope(Dispatchers.IO).launch {
-            climbsList.addAll(ClimbsRepository.getClimbsWithCurrentFilter())
+            _climbsList.value = ClimbsRepository.getClimbsWithCurrentFilter()
         }
     }
 
@@ -35,8 +36,7 @@ class ListClimbsViewModel : ViewModel() {
             _searchText.debounce(1000).collect { searchText ->
                 if (ClimbsRepository.currentFilter.name != searchText) {
                     ClimbsRepository.currentFilter.name = searchText
-                    climbsList.clear()
-                    climbsList.addAll(ClimbsRepository.getClimbsWithCurrentFilter())
+                    _climbsList.value = ClimbsRepository.getClimbsWithCurrentFilter()
 
                 }
             }

@@ -33,11 +33,12 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.IntSize
 import koziol.mooo.com.mkb2.R
+import koziol.mooo.com.mkb2.data.Climb
 import koziol.mooo.com.mkb2.data.ClimbsRepository
 
 
 @Composable
-fun BoardScreen(destinations: Map<String, () -> Unit>) {
+fun BoardScreen(destinations: Map<String, () -> Unit>, climb: Climb) {
     Scaffold(bottomBar = {
         BoardBottomBar(destinations)
     }) { paddingValues ->
@@ -60,7 +61,6 @@ fun BoardScreen(destinations: Map<String, () -> Unit>) {
                 panOffset = Offset(
                     newOffset.x.coerceIn(-maxX, maxX), newOffset.y.coerceIn(-maxY, maxY)
                 )
-                //offset += offsetChange * scale
             }
 
             Image(painter = painterResource(id = R.drawable._546),
@@ -77,16 +77,12 @@ fun BoardScreen(destinations: Map<String, () -> Unit>) {
                     .transformable(state = state)
                     .drawWithContent {
                         drawContent()
-                        val climb = ClimbsRepository.currentClimb
-                        if (climb != null) {
-                            for (hold in climb.getHoldsList()) {
-                                drawCircle(
-                                    color = Color(hold.role.screenColor), 28F, center = Offset(
-                                        hold.xFraction * size.width, hold.yFraction * size.height
-                                    ), 1F, style = Stroke(7F)
-                                )
-                            }
-
+                        for (hold in climb.getHoldsList()) {
+                            drawCircle(
+                                color = Color(hold.role.screenColor), 28F, center = Offset(
+                                    hold.xFraction * size.width, hold.yFraction * size.height
+                                ), 1F, style = Stroke(7F)
+                            )
                         }
                     })
         }
