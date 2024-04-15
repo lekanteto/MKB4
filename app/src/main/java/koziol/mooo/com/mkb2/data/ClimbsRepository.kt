@@ -1,16 +1,20 @@
 package koziol.mooo.com.mkb2.data
 
+import android.content.Context
 import android.database.sqlite.SQLiteDatabase
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 object ClimbsRepository {
 
-    lateinit var db: SQLiteDatabase
+    private lateinit var db: SQLiteDatabase
 
     var currentFilter = BaseFilter()
 
     var currentClimb: Climb = Climb()
 
-    private fun convertToArgs(filter: BaseFilter): Array<String> {
+    private fun convertToSqlArgs(filter: BaseFilter): Array<String> {
         val ignoreSetter = if (filter.setterName.isEmpty()) "1" else "0"
         val ignoreHolds = if (filter.holds.isEmpty()) "1" else "0"
 
@@ -113,7 +117,7 @@ object ClimbsRepository {
                 ORDER  BY climb_stats.quality_average DESC,
                           climb_stats.ascensionist_count DESC
                 LIMIT  100 
-            """.trimIndent(), convertToArgs(filter)
+            """.trimIndent(), convertToSqlArgs(filter)
             )
 
 
@@ -158,6 +162,12 @@ object ClimbsRepository {
             climbsCursor.close()
         }
         return climbsList
+    }
+
+    fun setup(context: Context) {
+        CoroutineScope(Dispatchers.IO).launch {
+            db = OriginalDbOpenHelper(context).writableDatabase
+        }
     }
 }
 

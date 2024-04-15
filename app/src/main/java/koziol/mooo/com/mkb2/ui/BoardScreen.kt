@@ -44,7 +44,7 @@ fun BoardScreen(destinations: Map<String, () -> Unit>, climb: Climb) {
     }) { paddingValues ->
         Column(modifier = Modifier.padding(paddingValues)) {
             Text(
-                text = ClimbsRepository.currentClimb?.name ?: "Climb not found"
+                text = ClimbsRepository.currentClimb.name
             )
             // set up all transformation states
             var zoomFactor by remember { mutableFloatStateOf(1f) }
@@ -130,7 +130,7 @@ fun BoardBottomBar(
             )
         },
             selected = false,
-            onClick = { uriHandler.openUri("https://kilterboardapp.com/climbs/${ClimbsRepository.currentClimb?.uuid}") })
+            onClick = { uriHandler.openUri("https://kilterboardapp.com/climbs/${ClimbsRepository.currentClimb.uuid}") })
 
     }, floatingActionButton = {
         FloatingActionButton(

@@ -1,11 +1,13 @@
 package koziol.mooo.com.mkb2.data
 
+import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import androidx.compose.ui.geometry.Offset
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 object HoldsRepository {
-
-    private lateinit var myDb: SQLiteDatabase
 
     private lateinit var allHoldsMap: Map<Int, KBHold>
 
@@ -51,14 +53,18 @@ object HoldsRepository {
         HoldRole.FootHold.id to HoldRole.FootHold
     )
 
-    fun setup(db: SQLiteDatabase) {
-        myDb = db
-        allHoldsMap = getHoldsFromDb()
+    fun setup(context: Context) {
+        CoroutineScope(Dispatchers.IO).launch {
+            val db = OriginalDbOpenHelper(context).readableDatabase
+            allHoldsMap = getHoldsFromDb(db)
+            db.close()
+        }
+
     }
 
-    private fun getHoldsFromDb(): Map<Int, KBHold> {
+    private fun getHoldsFromDb(db: SQLiteDatabase): Map<Int, KBHold> {
         val holdsMap = HashMap<Int, KBHold>()
-        val holdsCursor = myDb.rawQuery(
+        val holdsCursor = db.rawQuery(
             """
                 SELECT placements.id, holes.x, holes.y, placement_roles.id
                 FROM placements 
@@ -67,24 +73,22 @@ object HoldsRepository {
                 WHERE 
                 	placements.layout_id=1 AND -- Kilterboard Original layout
                 	holes.x BETWEEN 1 AND 143 AND holes.y BETWEEN 1 AND 155 -- dimensions of 12x12 w/ kickboard
-                ORDER BY holes.x, holes.y
+                -- ORDER BY holes.x, holes.y
             """.trimIndent(), null
         )
 
         var id: Int
         var x: Int
         var y: Int
-        var role: HoldRole?
+        var role: HoldRole
 
-        holdsCursor.moveToFirst()
-        while (!holdsCursor.isAfterLast) {
+        while (holdsCursor.moveToNext()) {
             id = holdsCursor.getInt(0)
             x = holdsCursor.getInt(1)
             y = holdsCursor.getInt(2)
             role = holdRoles[holdsCursor.getInt(3)] ?: HoldRole.MiddleHold
 
             holdsMap[id] = KBHold(id, x, y, role)
-            holdsCursor.moveToNext()
         }
         holdsCursor.close()
         return holdsMap

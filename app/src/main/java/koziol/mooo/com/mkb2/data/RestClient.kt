@@ -1,6 +1,7 @@
 package koziol.mooo.com.mkb2.data
 
 import android.content.ContentValues
+import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteDatabase.CONFLICT_REPLACE
 import android.util.Log
@@ -142,7 +143,6 @@ object RestClient {
                 lastSynchronizedAt = syncsCursor.getString(1), tableName = syncsCursor.getString(0)
             )
             sharedSyncs.add(entry)
-
         }
         syncsCursor.close()
 
@@ -158,8 +158,10 @@ object RestClient {
         client.close()
     }
 
-    fun setup(db: SQLiteDatabase) {
-        this.db = db
+    fun setup(context: Context) {
+        CoroutineScope(Dispatchers.IO).launch {
+            db = OriginalDbOpenHelper(context).writableDatabase
+        }
 
         CoroutineScope(Dispatchers.IO).launch {
             client = HttpClient(CIO) {
@@ -175,7 +177,6 @@ object RestClient {
                     json()
                 }
             }
-            downloadSharedData()
         }
     }
 }

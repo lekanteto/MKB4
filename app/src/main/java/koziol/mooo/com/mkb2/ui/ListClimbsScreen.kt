@@ -1,6 +1,7 @@
 package koziol.mooo.com.mkb2.ui
 
 import android.util.Log
+import androidx.activity.ComponentActivity
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -27,16 +28,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import koziol.mooo.com.mkb2.R
 import koziol.mooo.com.mkb2.data.ClimbsRepository
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListClimbsScreen(
-    destinations: Map<String, () -> Unit>, listClimbsViewModel: ListClimbsViewModel = viewModel()
+    destinations: Map<String, () -> Unit>, listClimbsViewModel: ListClimbsViewModel = viewModel(
+        LocalContext.current as ComponentActivity
+    )
 ) {
 
     Scaffold(topBar = { ListClimbsTopBar(destinations) }, bottomBar = {
@@ -56,9 +59,11 @@ fun ListClimbsScreen(
                 modifier = Modifier.fillMaxWidth(),
                 //leadingIcon = {Icon(imageVector = Icons.Outlined.Search, null)},
                 trailingIcon = {
-                    Icon(painterResource(id = R.drawable.outline_cancel_24),
-                        null,
-                        modifier = Modifier.clickable { listClimbsViewModel.onSearchTextChange("") })
+                    if (searchText.isNotEmpty()) {
+                        Icon(painterResource(id = R.drawable.outline_cancel_24),
+                            null,
+                            modifier = Modifier.clickable { listClimbsViewModel.onSearchTextChange("") })
+                    }
                 },
                 singleLine = true,
             )

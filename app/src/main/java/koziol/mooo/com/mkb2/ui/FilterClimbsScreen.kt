@@ -54,10 +54,10 @@ fun FilterClimbsScreen(
             val minDev by filterViewModel.minDeviation.collectAsStateWithLifecycle()
             val maxDev by filterViewModel.maxDeviation.collectAsStateWithLifecycle()
             GradeRangeSelector(
-                initialMin = min,
-                initialMax = max,
-                initialMinDeviation = minDev,
-                initialMaxDeviation = maxDev,
+                selectedMin = min,
+                selectedMax = max,
+                selectedMinDev = minDev,
+                selectedMaxDev = maxDev,
                 grades = filterViewModel.gradeNames,
                 onRangeChanged = filterViewModel::updateGradeRange,
                 onDeviationChanged = filterViewModel::updateDeviationRange
@@ -66,8 +66,8 @@ fun FilterClimbsScreen(
             val minRating by filterViewModel.minRating.collectAsStateWithLifecycle()
             val maxRating by filterViewModel.maxRating.collectAsStateWithLifecycle()
             RatingRangeSelector(
-                initialMin = minRating,
-                initialMax = maxRating,
+                selectedMin = minRating,
+                selectedMax = maxRating,
                 onRangeChanged = filterViewModel::updateRatingRange
             )
 
@@ -82,8 +82,8 @@ fun FilterClimbsScreen(
             val myTries by filterViewModel.myTries.collectAsStateWithLifecycle()
             val myBoulders by filterViewModel.myBoulders.collectAsStateWithLifecycle()
             MyClimbsFilter(
-                ascentsFilter = myAscents,
-                triesFilter = myTries,
+                ascentsOptions = myAscents,
+                triesOptions = myTries,
                 boulderFilter = myBoulders,
                 onAscentsChanged = filterViewModel::updateMyAscents,
                 onTriesChanged = filterViewModel::updateMyTries,
@@ -94,8 +94,8 @@ fun FilterClimbsScreen(
             val theirTries by filterViewModel.theirTries.collectAsStateWithLifecycle()
             val theirBoulders by filterViewModel.theirBoulders.collectAsStateWithLifecycle()
             TheirClimbsFilter(
-                ascentsFilter = theirAscents,
-                triesFilter = theirTries,
+                ascentsOptions = theirAscents,
+                triesOptions = theirTries,
                 boulderFilter = theirBoulders,
                 onAscentsChanged = filterViewModel::updateTheirAscents,
                 onTriesChanged = filterViewModel::updateTheirTries,
@@ -146,10 +146,10 @@ fun FilterClimbsTopBar(
 
 @Composable
 fun GradeRangeSelector(
-    initialMin: Int,
-    initialMax: Int,
-    initialMinDeviation: Float,
-    initialMaxDeviation: Float,
+    selectedMin: Int,
+    selectedMax: Int,
+    selectedMinDev: Float,
+    selectedMaxDev: Float,
     grades: Array<String>,
     onRangeChanged: (Int, Int) -> Unit,
     onDeviationChanged: (Float, Float) -> Unit
@@ -160,13 +160,13 @@ fun GradeRangeSelector(
             .padding(5.dp)
     ) {
 
-        val minGrade = grades[initialMin]
-        val maxGrade = grades[initialMax]
+        val minGrade = grades[selectedMin]
+        val maxGrade = grades[selectedMax]
 
         Text("Schwierigkeit: $minGrade - $maxGrade")
         RangeSlider(
             modifier = Modifier.padding(20.dp),
-            value = initialMin.toFloat()..initialMax.toFloat(),
+            value = selectedMin.toFloat()..selectedMax.toFloat(),
             steps = grades.size - 2,
             onValueChange = { range ->
                 onRangeChanged(
@@ -179,12 +179,12 @@ fun GradeRangeSelector(
 
         Text(
             String.format(
-                "Grade deviation: %.1f - %.1f", initialMinDeviation, initialMaxDeviation
+                "Grade deviation: %.1f - %.1f", selectedMinDev, selectedMaxDev
             )
         )
         RangeSlider(
             modifier = Modifier.padding(20.dp),
-            value = initialMinDeviation..initialMaxDeviation,
+            value = selectedMinDev..selectedMaxDev,
             //steps = 9,
             onValueChange = { range -> onDeviationChanged(range.start, range.endInclusive) },
             valueRange = -0.5f..0.5f,
@@ -195,7 +195,7 @@ fun GradeRangeSelector(
 
 @Composable
 fun RatingRangeSelector(
-    initialMin: Float, initialMax: Float, onRangeChanged: (Float, Float) -> Unit
+    selectedMin: Float, selectedMax: Float, onRangeChanged: (Float, Float) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -206,12 +206,12 @@ fun RatingRangeSelector(
 
         Text(
             String.format(
-                "Rating: %.1f - %.1f", initialMin, initialMax
+                "Rating: %.1f - %.1f", selectedMin, selectedMax
             )
         )
         RangeSlider(
             modifier = Modifier.padding(20.dp),
-            value = initialMin..initialMax,
+            value = selectedMin..selectedMax,
             //steps = 29,
             onValueChange = { range ->
                 onRangeChanged(
@@ -226,7 +226,7 @@ fun RatingRangeSelector(
 
 @Composable
 fun MinAscentsSelector(
-    initialMin: Int, options: Array<Int>, onValueChanged: (Int) -> Unit
+    min: Int, options: Array<Int>, onValueChanged: (Int) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -234,11 +234,11 @@ fun MinAscentsSelector(
             .padding(5.dp)
     ) {
         Text(
-            "Min number of ascents: ${options[initialMin]}"
+            "Min number of ascents: ${options[min]}"
         )
         Slider(
             modifier = Modifier.padding(20.dp),
-            value = initialMin.toFloat(),
+            value = min.toFloat(),
             steps = options.size - 2,
             onValueChange = { value ->
                 onValueChanged(
@@ -253,8 +253,8 @@ fun MinAscentsSelector(
 
 @Composable
 fun MyClimbsFilter(
-    ascentsFilter: FilterOptions,
-    triesFilter: FilterOptions,
+    ascentsOptions: FilterOptions,
+    triesOptions: FilterOptions,
     boulderFilter: FilterOptions,
     onAscentsChanged: (FilterOptions) -> Unit,
     onTriesChanged: (FilterOptions) -> Unit,
@@ -269,7 +269,7 @@ fun MyClimbsFilter(
             modifier = Modifier.padding(5.dp),
             onClick = {
                 onAscentsChanged(
-                    when (ascentsFilter) {
+                    when (ascentsOptions) {
                         FilterOptions.INCLUDE -> FilterOptions.EXCLUDE
                         FilterOptions.EXCLUDE -> FilterOptions.EXCLUSIVE
                         FilterOptions.EXCLUSIVE -> FilterOptions.INCLUDE
@@ -280,9 +280,9 @@ fun MyClimbsFilter(
             label = {
                 Text("My Ascents")
             },
-            selected = ascentsFilter != FilterOptions.INCLUDE,
+            selected = ascentsOptions != FilterOptions.INCLUDE,
             leadingIcon = {
-                when (ascentsFilter) {
+                when (ascentsOptions) {
                     FilterOptions.INCLUDE -> Icon(
                         painter = painterResource(id = R.drawable.outline_visibility_24),
                         contentDescription = "Include",
@@ -309,7 +309,7 @@ fun MyClimbsFilter(
             modifier = Modifier.padding(5.dp),
             onClick = {
                 onTriesChanged(
-                    when (triesFilter) {
+                    when (triesOptions) {
                         FilterOptions.INCLUDE -> FilterOptions.EXCLUDE
                         FilterOptions.EXCLUDE -> FilterOptions.EXCLUSIVE
                         FilterOptions.EXCLUSIVE -> FilterOptions.INCLUDE
@@ -320,9 +320,9 @@ fun MyClimbsFilter(
             label = {
                 Text("My Tries")
             },
-            selected = triesFilter != FilterOptions.INCLUDE,
+            selected = triesOptions != FilterOptions.INCLUDE,
             leadingIcon = {
-                when (triesFilter) {
+                when (triesOptions) {
                     FilterOptions.INCLUDE -> Icon(
                         painter = painterResource(id = R.drawable.outline_visibility_24),
                         contentDescription = "Include",
@@ -349,8 +349,8 @@ fun MyClimbsFilter(
 
 @Composable
 fun TheirClimbsFilter(
-    ascentsFilter: FilterOptions,
-    triesFilter: FilterOptions,
+    ascentsOptions: FilterOptions,
+    triesOptions: FilterOptions,
     boulderFilter: FilterOptions,
     onAscentsChanged: (FilterOptions) -> Unit,
     onTriesChanged: (FilterOptions) -> Unit,
@@ -365,7 +365,7 @@ fun TheirClimbsFilter(
             modifier = Modifier.padding(5.dp),
             onClick = {
                 onAscentsChanged(
-                    when (ascentsFilter) {
+                    when (ascentsOptions) {
                         FilterOptions.INCLUDE -> FilterOptions.EXCLUSIVE
                         FilterOptions.EXCLUDE -> FilterOptions.EXCLUSIVE
                         FilterOptions.EXCLUSIVE -> FilterOptions.INCLUDE
@@ -376,9 +376,9 @@ fun TheirClimbsFilter(
             label = {
                 Text("Followees Ascents")
             },
-            selected = ascentsFilter != FilterOptions.INCLUDE,
+            selected = ascentsOptions != FilterOptions.INCLUDE,
             leadingIcon = {
-                when (ascentsFilter) {
+                when (ascentsOptions) {
                     FilterOptions.INCLUDE -> Icon(
                         painter = painterResource(id = R.drawable.outline_visibility_24),
                         contentDescription = "Include",
@@ -405,7 +405,7 @@ fun TheirClimbsFilter(
             modifier = Modifier.padding(5.dp),
             onClick = {
                 onTriesChanged(
-                    when (triesFilter) {
+                    when (triesOptions) {
                         FilterOptions.INCLUDE -> FilterOptions.EXCLUSIVE
                         FilterOptions.EXCLUDE -> FilterOptions.EXCLUSIVE
                         FilterOptions.EXCLUSIVE -> FilterOptions.INCLUDE
@@ -416,9 +416,9 @@ fun TheirClimbsFilter(
             label = {
                 Text("Followees Tries")
             },
-            selected = triesFilter != FilterOptions.INCLUDE,
+            selected = triesOptions != FilterOptions.INCLUDE,
             leadingIcon = {
-                when (triesFilter) {
+                when (triesOptions) {
                     FilterOptions.INCLUDE -> Icon(
                         painter = painterResource(id = R.drawable.outline_visibility_24),
                         contentDescription = "Include",
