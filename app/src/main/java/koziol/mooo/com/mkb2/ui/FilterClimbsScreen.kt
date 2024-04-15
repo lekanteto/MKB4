@@ -123,7 +123,6 @@ fun FilterClimbsTopBar(
         Text("Filterkonfiguration")
     }, navigationIcon = {
         OutlinedIconButton(onClick = {
-            Log.d("Mkb2", "leaving filterscreen")
             onApplyFilter()
             destinations["climbs"]?.invoke()
         }, content = {

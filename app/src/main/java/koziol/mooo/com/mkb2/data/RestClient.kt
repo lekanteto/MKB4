@@ -158,10 +158,9 @@ object RestClient {
         client.close()
     }
 
-    fun setup(context: Context) {
-        CoroutineScope(Dispatchers.IO).launch {
-            db = OriginalDbOpenHelper(context).writableDatabase
-        }
+    fun setup(db: SQLiteDatabase) {
+
+        this.db = db
 
         CoroutineScope(Dispatchers.IO).launch {
             client = HttpClient(CIO) {

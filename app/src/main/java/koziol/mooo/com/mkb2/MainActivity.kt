@@ -1,23 +1,35 @@
 package koziol.mooo.com.mkb2
 
+import android.database.sqlite.SQLiteDatabase
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import koziol.mooo.com.mkb2.data.ClimbsRepository
 import koziol.mooo.com.mkb2.data.HoldsRepository
+import koziol.mooo.com.mkb2.data.OriginalDbOpenHelper
 import koziol.mooo.com.mkb2.data.RestClient
 import koziol.mooo.com.mkb2.ui.MainSurface
 import koziol.mooo.com.mkb2.ui.theme.MKB2Theme
+import kotlin.coroutines.CoroutineContext
 
 
 class MainActivity : ComponentActivity() {
 
+    private lateinit var db: SQLiteDatabase
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        HoldsRepository.setup(this)
-        ClimbsRepository.setup(this)
-        RestClient.setup(this)
+        CoroutineScope(Dispatchers.IO).launch {
+            db = openDb()
+            HoldsRepository.setup(db)
+            ClimbsRepository.setup(db)
+            RestClient.setup(db)
+        }
+
 
         setContent {
             MKB2Theme {
@@ -26,8 +38,13 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private fun openDb(): SQLiteDatabase {
+        return OriginalDbOpenHelper(this).writableDatabase
+    }
+
     override fun onDestroy() {
         RestClient.close()
+        db.close()
         super.onDestroy()
     }
 

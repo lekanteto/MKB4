@@ -1,18 +1,27 @@
 package koziol.mooo.com.mkb2.data
 
-import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 object ClimbsRepository {
 
     private lateinit var db: SQLiteDatabase
 
-    var currentFilter = BaseFilter()
+    var activeFilter = BaseFilter()
+        set(value) {
+            field = value
+            CoroutineScope(Dispatchers.IO).launch {
+                climbs.value = getFilteredClimbs(value)
+            }
+        }
 
     var currentClimb: Climb = Climb()
+
+    var climbs = MutableStateFlow(emptyList<Climb>())
 
     private fun convertToSqlArgs(filter: BaseFilter): Array<String> {
         val ignoreSetter = if (filter.setterName.isEmpty()) "1" else "0"
@@ -43,29 +52,14 @@ object ClimbsRepository {
         )
     }
 
-    fun setCurrentHoldsFilter(holds: List<KBHold>, respectHoldRoles: Boolean = true) {
-        var holdsFilter = "%"
-        holds.sortedBy { it.id }.forEach { hold ->
-            holdsFilter += "p"+hold.id+"r"
-            if (respectHoldRoles) {
-                holdsFilter += hold.role.id
-            }
-            holdsFilter += "%"
-        }
-        currentFilter.holds = holdsFilter
+    suspend fun getClimbsWithCurrentFilter(): List<Climb> {
+        return getFilteredClimbs(activeFilter)
     }
 
-    fun clearCurrentHoldsFilter() {
-        currentFilter.holds = ""
-    }
+    private suspend fun getFilteredClimbs(filter: BaseFilter): List<Climb> {
+        return withContext(Dispatchers.IO) {
+            val climbsList = mutableListOf<Climb>()
 
-    fun getClimbsWithCurrentFilter(): List<Climb> {
-        return getFilteredClimbs(currentFilter)
-    }
-
-    private fun getFilteredClimbs(filter: BaseFilter): List<Climb> {
-        val climbsList = mutableListOf<Climb>()
-        if (this::db.isInitialized) {
             val climbsCursor = db.rawQuery(
                 """
                 SELECT climbs.uuid AS climbUuid,
@@ -160,14 +154,13 @@ object ClimbsRepository {
             } while (climbsCursor.moveToNext())
 
             climbsCursor.close()
+
+            return@withContext climbsList
         }
-        return climbsList
     }
 
-    fun setup(context: Context) {
-        CoroutineScope(Dispatchers.IO).launch {
-            db = OriginalDbOpenHelper(context).writableDatabase
-        }
+    fun setup(db: SQLiteDatabase) {
+        this.db = db
     }
 }
 

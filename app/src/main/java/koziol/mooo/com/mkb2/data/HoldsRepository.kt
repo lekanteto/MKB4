@@ -3,9 +3,11 @@ package koziol.mooo.com.mkb2.data
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import androidx.compose.ui.geometry.Offset
+import io.ktor.util.reflect.instanceOf
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 object HoldsRepository {
 
@@ -40,7 +42,7 @@ object HoldsRepository {
     fun getHoldsStringForHoldsList(holds: List<KBHold>): String {
         var holdsString = ""
         holds.sortedBy { it.id }.forEach { hold ->
-            holdsString += "p"+hold.id+"r"+hold.role.id
+            holdsString += "p" + hold.id + "r" + hold.role.id
         }
         return holdsString
     }
@@ -53,13 +55,10 @@ object HoldsRepository {
         HoldRole.FootHold.id to HoldRole.FootHold
     )
 
-    fun setup(context: Context) {
-        CoroutineScope(Dispatchers.IO).launch {
-            val db = OriginalDbOpenHelper(context).readableDatabase
+    suspend fun setup(db: SQLiteDatabase) {
+        withContext(Dispatchers.IO) {
             allHoldsMap = getHoldsFromDb(db)
-            db.close()
         }
-
     }
 
     private fun getHoldsFromDb(db: SQLiteDatabase): Map<Int, KBHold> {
@@ -97,7 +96,8 @@ object HoldsRepository {
     fun getNearestHold(offset: Offset): KBHold {
         lateinit var nearestHold: KBHold
         var nearestDistance = Float.MAX_VALUE
-        allHoldsMap.forEach {val hold = it.value
+        allHoldsMap.forEach {
+            val hold = it.value
             val currentDistance = getDistanceSquared(offset, hold)
             if (currentDistance < nearestDistance) {
                 nearestHold = hold

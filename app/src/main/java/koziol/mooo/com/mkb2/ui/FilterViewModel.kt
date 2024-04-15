@@ -34,27 +34,27 @@ class FilterViewModel(private val savedStateHandle: SavedStateHandle) : ViewMode
     )
 
     private fun updateFilterInRepository() {
-        ClimbsRepository.currentFilter.minRating =
-            ((savedStateHandle["minRating"] ?: 1f) * 10).roundToInt() / 10f
-        ClimbsRepository.currentFilter.maxRating =
-            ((savedStateHandle["maxRating"] ?: 3f) * 10).roundToInt() / 10f
-        ClimbsRepository.currentFilter.minGradeIndex = (savedStateHandle["minGrade"] ?: 0) + 10
-        ClimbsRepository.currentFilter.maxGradeIndex = (savedStateHandle["maxGrade"] ?: 0) + 10
-        ClimbsRepository.currentFilter.minGradeDeviation =
-            ((savedStateHandle["minDeviation"] ?: -0.5f) * 10).roundToInt() / 10f
-        ClimbsRepository.currentFilter.maxGradeDeviation =
-            ((savedStateHandle["maxDeviation"] ?: 0.5f) * 10).roundToInt() / 10f
-        ClimbsRepository.currentFilter.minAscents =
-            numOfAscentsOptions[savedStateHandle["minAscents"] ?: 0]
-        ClimbsRepository.currentFilter.setterName = ""
-        ClimbsRepository.currentFilter.includeMyAscents =
-            (savedStateHandle["myAscents"] ?: FilterOptions.INCLUDE) == FilterOptions.INCLUDE
-        ClimbsRepository.currentFilter.onlyMyAscents =
-            (savedStateHandle["myAscents"] ?: FilterOptions.INCLUDE) == FilterOptions.EXCLUSIVE
-        ClimbsRepository.currentFilter.includeMyTries =
-            (savedStateHandle["myTries"] ?: FilterOptions.INCLUDE) == FilterOptions.INCLUDE
-        ClimbsRepository.currentFilter.onlyMyTries =
-            (savedStateHandle["myTries"] ?: FilterOptions.INCLUDE) == FilterOptions.EXCLUSIVE
+        ClimbsRepository.activeFilter = ClimbsRepository.activeFilter.copy(
+            holds = savedStateHandle["holds"] ?: "",
+            minRating = ((savedStateHandle["minRating"] ?: 1f) * 10).roundToInt() / 10f,
+            maxRating = ((savedStateHandle["maxRating"] ?: 3f) * 10).roundToInt() / 10f,
+            minGradeIndex = (savedStateHandle["minGrade"] ?: 0) + 10,
+            maxGradeIndex = (savedStateHandle["maxGrade"] ?: 0) + 10,
+            minGradeDeviation = ((savedStateHandle["minDeviation"]
+                ?: -0.5f) * 10).roundToInt() / 10f,
+            maxGradeDeviation = ((savedStateHandle["maxDeviation"]
+                ?: 0.5f) * 10).roundToInt() / 10f,
+            minAscents = numOfAscentsOptions[savedStateHandle["minAscents"] ?: 0],
+            setterName = "",
+            includeMyAscents = (savedStateHandle["myAscents"]
+                ?: FilterOptions.INCLUDE) == FilterOptions.INCLUDE,
+            onlyMyAscents = (savedStateHandle["myAscents"]
+                ?: FilterOptions.INCLUDE) == FilterOptions.EXCLUSIVE,
+            includeMyTries = (savedStateHandle["myTries"]
+                ?: FilterOptions.INCLUDE) == FilterOptions.INCLUDE,
+            onlyMyTries = (savedStateHandle["myTries"]
+                ?: FilterOptions.INCLUDE) == FilterOptions.EXCLUSIVE,
+        )
     }
 
     val numOfAscentsOptions = arrayOf(0, 1, 5, 10, 20, 30, 50, 100, 500, 1000)
@@ -151,13 +151,22 @@ class FilterViewModel(private val savedStateHandle: SavedStateHandle) : ViewMode
 
     val selectedHoldsList = mutableStateListOf<KBHold>()
 
-    fun applyHoldsFilter() {
-        ClimbsRepository.setCurrentHoldsFilter(selectedHoldsList)
+    fun applyHoldsFilter(respectHoldRoles: Boolean = true) {
+
+        var holdsFilter = "%"
+        selectedHoldsList.sortedBy { it.id }.forEach { hold ->
+            holdsFilter += "p" + hold.id + "r"
+            if (respectHoldRoles) {
+                holdsFilter += hold.role.id
+            }
+            holdsFilter += "%"
+        }
+        savedStateHandle["holds"] = holdsFilter
     }
 
     fun unselectAllHolds() {
         selectedHoldsList.clear()
-        ClimbsRepository.clearCurrentHoldsFilter()
+        savedStateHandle["holds"] = ""
     }
 
     fun addOrUpdateHoldAt(tap: Offset) {
