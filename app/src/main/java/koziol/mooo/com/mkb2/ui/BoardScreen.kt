@@ -1,6 +1,7 @@
 package koziol.mooo.com.mkb2.ui
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.Column
@@ -16,6 +17,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -28,6 +30,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
@@ -42,9 +45,12 @@ fun BoardScreen(destinations: Map<String, () -> Unit>, climb: Climb) {
     Scaffold(bottomBar = {
         BoardBottomBar(destinations)
     }) { paddingValues ->
-        Column(modifier = Modifier.padding(paddingValues)) {
+        var lastDrag = remember { mutableFloatStateOf(0f) }
+        Column(
+            modifier = Modifier.padding(paddingValues)
+        ) {
             Text(
-                text = ClimbsRepository.currentClimb.name
+                text = ClimbsRepository.currentClimb.name + " " + lastDrag.floatValue.toString()
             )
             // set up all transformation states
             var zoomFactor by remember { mutableFloatStateOf(1f) }
@@ -52,6 +58,10 @@ fun BoardScreen(destinations: Map<String, () -> Unit>, climb: Climb) {
             var imageSize by remember { mutableStateOf(IntSize.Zero) }
             val state = rememberTransformableState { zoomChange, offsetChange, _ ->
                 zoomFactor = (zoomFactor * zoomChange).coerceIn(1F, 5F)
+
+                if (zoomFactor == 1f) {
+                    lastDrag.floatValue = offsetChange.x
+                }
 
                 val newOffset = panOffset + offsetChange * zoomFactor
 

@@ -13,14 +13,10 @@ class ListClimbsViewModel : ViewModel() {
 
     var climbList = ClimbsRepository.climbs
 
-    //var climbs: StateFlow<List<Climb>> = ClimbsRepository.climbs
-
     private val _searchText = MutableStateFlow("")
     val searchText = _searchText.asStateFlow()
 
-    private val _isSearching = MutableStateFlow(false)
-    val isSearching = _isSearching.asStateFlow()
-
+    val isSearching = ClimbsRepository.isQuerying
 
     @OptIn(FlowPreview::class)
     fun onSearchTextChange(text: String) {

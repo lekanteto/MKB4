@@ -4,6 +4,8 @@ import android.database.sqlite.SQLiteDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -14,14 +16,16 @@ object ClimbsRepository {
     var activeFilter = BaseFilter()
         set(value) {
             field = value
-            CoroutineScope(Dispatchers.IO).launch {
-                climbs.value = getFilteredClimbs(value)
-            }
+            triggerListUpdate()
         }
 
     var currentClimb: Climb = Climb()
 
-    var climbs = MutableStateFlow(emptyList<Climb>())
+    private val _climbs = MutableStateFlow(emptyList<Climb>())
+    val climbs = _climbs.asStateFlow()
+
+    private val _isQuerying = MutableStateFlow(false)
+    val isQuerying = _isQuerying.asStateFlow()
 
     private fun convertToSqlArgs(filter: BaseFilter): Array<String> {
         val ignoreSetter = if (filter.setterName.isEmpty()) "1" else "0"
@@ -52,16 +56,20 @@ object ClimbsRepository {
         )
     }
 
-    suspend fun getClimbsWithCurrentFilter(): List<Climb> {
-        return getFilteredClimbs(activeFilter)
+    fun triggerListUpdate() {
+        CoroutineScope(Dispatchers.IO).launch {
+            _climbs.value = getFilteredClimbs(activeFilter)
+        }
     }
 
     private suspend fun getFilteredClimbs(filter: BaseFilter): List<Climb> {
         return withContext(Dispatchers.IO) {
+            _isQuerying.update { true }
             val climbsList = mutableListOf<Climb>()
 
-            val climbsCursor = db.rawQuery(
-                """
+            if (ClimbsRepository::db.isInitialized) {
+                val climbsCursor = db.rawQuery(
+                    """
                 SELECT climbs.uuid AS climbUuid,
                        climbs.name AS climbName,
                        climbs.frames AS holdsString,
@@ -111,50 +119,51 @@ object ClimbsRepository {
                 ORDER  BY climb_stats.quality_average DESC,
                           climb_stats.ascensionist_count DESC
                 LIMIT  100 
-            """.trimIndent(), convertToSqlArgs(filter)
-            )
-
-
-            if (climbsCursor.moveToFirst()) do {
-                var columnIndex = climbsCursor.getColumnIndexOrThrow("climbUuid")
-                val uuid = climbsCursor.getString(columnIndex)
-
-                columnIndex = climbsCursor.getColumnIndexOrThrow("climbName")
-                val name = climbsCursor.getString(columnIndex)
-
-                columnIndex = climbsCursor.getColumnIndexOrThrow("setterName")
-                val setter = climbsCursor.getString(columnIndex)
-
-                columnIndex = climbsCursor.getColumnIndexOrThrow("holdsString")
-                val holdsString = climbsCursor.getString(columnIndex)
-
-                columnIndex = climbsCursor.getColumnIndexOrThrow("ascents")
-                val ascents = climbsCursor.getInt(columnIndex)
-
-                columnIndex = climbsCursor.getColumnIndexOrThrow("gradeName")
-                val grade = climbsCursor.getString(columnIndex)
-
-                columnIndex = climbsCursor.getColumnIndexOrThrow("gradeDeviation")
-                val gradeDeviation = climbsCursor.getFloat(columnIndex)
-
-                columnIndex = climbsCursor.getColumnIndexOrThrow("rating")
-                val rating = climbsCursor.getFloat(columnIndex)
-
-                val currentClimb = Climb(
-                    uuid = uuid,
-                    name = name,
-                    setter = setter,
-                    holdsString = holdsString,
-                    grade = grade,
-                    deviation = gradeDeviation,
-                    rating = rating,
-                    ascents = ascents
+                """.trimIndent(), convertToSqlArgs(filter)
                 )
-                climbsList.add(currentClimb)
-            } while (climbsCursor.moveToNext())
 
-            climbsCursor.close()
 
+                if (climbsCursor.moveToFirst()) do {
+                    var columnIndex = climbsCursor.getColumnIndexOrThrow("climbUuid")
+                    val uuid = climbsCursor.getString(columnIndex)
+
+                    columnIndex = climbsCursor.getColumnIndexOrThrow("climbName")
+                    val name = climbsCursor.getString(columnIndex)
+
+                    columnIndex = climbsCursor.getColumnIndexOrThrow("setterName")
+                    val setter = climbsCursor.getString(columnIndex)
+
+                    columnIndex = climbsCursor.getColumnIndexOrThrow("holdsString")
+                    val holdsString = climbsCursor.getString(columnIndex)
+
+                    columnIndex = climbsCursor.getColumnIndexOrThrow("ascents")
+                    val ascents = climbsCursor.getInt(columnIndex)
+
+                    columnIndex = climbsCursor.getColumnIndexOrThrow("gradeName")
+                    val grade = climbsCursor.getString(columnIndex)
+
+                    columnIndex = climbsCursor.getColumnIndexOrThrow("gradeDeviation")
+                    val gradeDeviation = climbsCursor.getFloat(columnIndex)
+
+                    columnIndex = climbsCursor.getColumnIndexOrThrow("rating")
+                    val rating = climbsCursor.getFloat(columnIndex)
+
+                    val currentClimb = Climb(
+                        uuid = uuid,
+                        name = name,
+                        setter = setter,
+                        holdsString = holdsString,
+                        grade = grade,
+                        deviation = gradeDeviation,
+                        rating = rating,
+                        ascents = ascents
+                    )
+                    climbsList.add(currentClimb)
+                } while (climbsCursor.moveToNext())
+
+                climbsCursor.close()
+            }
+            _isQuerying.update { false }
             return@withContext climbsList
         }
     }

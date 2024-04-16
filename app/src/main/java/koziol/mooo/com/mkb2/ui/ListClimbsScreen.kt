@@ -13,7 +13,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Face
 import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
@@ -67,39 +70,44 @@ fun ListClimbsScreen(
                 },
                 singleLine = true,
             )
-            LazyColumn {
-                if (climbs.isEmpty()) {
-                    item { Text("Nothing found") }
-                } else {
-                    items(climbs) { climb ->
-                        ListItem(modifier = Modifier.clickable(onClick = {
-                            Log.d("Mkb2", "Climb in list tapped")
-                            ClimbsRepository.currentClimb = climb
-                            destinations["displayBoard"]?.invoke()
-                        }),
-                            overlineContent = { Text("${climb.ascents}") },
-                            headlineContent = { Text(climb.name) },
-                            supportingContent = {
-                                Text(
-                                    String.format(
-                                        "${climb.grade} %.1f set by ${climb.setter}",
-                                        climb.deviation
+            if (!isSearching) {
+                LazyColumn {
+                    if (climbs.isEmpty()) {
+                        item { Text("Nothing found") }
+                    } else {
+                        items(climbs) { climb ->
+                            ListItem(modifier = Modifier.clickable(onClick = {
+                                Log.d("Mkb2", "Climb in list tapped")
+                                ClimbsRepository.currentClimb = climb
+                                destinations["displayBoard"]?.invoke()
+                            }),
+                                overlineContent = { Text("${climb.ascents}") },
+                                headlineContent = { Text(climb.name) },
+                                supportingContent = {
+                                    Text(
+                                        String.format(
+                                            "${climb.grade} %.1f set by ${climb.setter}",
+                                            climb.deviation
+                                        )
                                     )
-                                )
-                            },
+                                },
 
-                            trailingContent = {
-                                Text(
-                                    String.format(
-                                        "%.2f", climb.rating
+                                trailingContent = {
+                                    Text(
+                                        String.format(
+                                            "%.2f", climb.rating
+                                        )
                                     )
-                                )
-                            })
-                        HorizontalDivider()
+                                })
+                            HorizontalDivider()
+                        }
+
                     }
-
                 }
+            } else {
+                Text("searching...")
             }
+
         }
     })
 }
@@ -108,38 +116,35 @@ fun ListClimbsScreen(
 fun ClimbsBottomBar(
     destinations: Map<String, () -> Unit>
 ) {
-    BottomAppBar(
-        actions = {
-            NavigationBarItem(icon = {
-                Icon(
-                    painter = painterResource(id = R.drawable.outline_new_window_24px),
-                    contentDescription = "Set Boulder"
-                )
-            },
-                //label = { Text("Neuer Boulder") },
-                selected = false, onClick = { })
-            NavigationBarItem(icon = {
-                Icon(
-                    Icons.Outlined.Face, contentDescription = "about you"
-                )
-            },
-                //label = { Text("Mein Profil") },
-                selected = false, onClick = { })
-
+    BottomAppBar(actions = {
+        NavigationBarItem(icon = {
+            Icon(
+                painter = painterResource(id = R.drawable.outline_new_window_24px),
+                contentDescription = "Set Boulder"
+            )
         },
-        /*        floatingActionButton = {
-                    FloatingActionButton(
-                        onClick = destinations["climbsFilter"] ?: {},
-                        containerColor = BottomAppBarDefaults.bottomAppBarFabColor,
-                        elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation(),
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.outline_filter_list_24),
-                            contentDescription = "Filter climbs"
-                        )
-                    }
-                }*/
-    )
+            //label = { Text("Neuer Boulder") },
+            selected = false, onClick = { })
+        NavigationBarItem(icon = {
+            Icon(
+                Icons.Outlined.Face, contentDescription = "about you"
+            )
+        },
+            //label = { Text("Mein Profil") },
+            selected = false, onClick = { })
+
+    }, floatingActionButton = {
+        FloatingActionButton(
+            onClick = destinations["climbsFilter"] ?: {},
+            containerColor = BottomAppBarDefaults.bottomAppBarFabColor,
+            elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation(),
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.outline_filter_list_24),
+                contentDescription = "Filter climbs"
+            )
+        }
+    })
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -167,12 +172,11 @@ fun ListClimbsTopBar(
                     contentDescription = "Localized description"
                 )
             }
-            OutlinedIconButton(onClick = destinations["climbsFilter"] ?: {}, content = {
-                Icon(
-                    painter = painterResource(id = R.drawable.outline_filter_list_24),
-                    contentDescription = "Filter bookmarks"
-                )
-            })
-
+                        OutlinedIconButton(onClick = destinations["climbsFilter"] ?: {}, content = {
+                            Icon(
+                                painter = painterResource(id = R.drawable.outline_filter_list_24),
+                                contentDescription = "Filter bookmarks"
+                            )
+                        })
         })
 }
