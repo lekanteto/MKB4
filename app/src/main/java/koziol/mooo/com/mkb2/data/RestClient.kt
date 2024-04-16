@@ -30,7 +30,7 @@ object RestClient {
     suspend fun downloadSharedData() {
         if (this::client.isInitialized) {
             withContext(Dispatchers.IO) {
-                val syncResponse: SharedSyncResponse =
+                val syncResponse: SyncResponse =
                     client.post("https://api.kilterboardapp.com/v1/sync") {
                         contentType(ContentType.Application.Json)
                         setBody(createSharedSyncRequestContent())
@@ -59,7 +59,7 @@ object RestClient {
     }
 
     private suspend fun updateClimbStats(
-        newClimbStats: List<SharedSyncResponse.PUT.ClimbStat>, date: String
+        newClimbStats: List<SyncResponse.PUT.ClimbStat>, date: String
     ) {
         withContext(Dispatchers.IO) {
             Log.d("Mkb4", "in updateClimbStats")
@@ -75,8 +75,6 @@ object RestClient {
                 row.put("quality_average", stats.qualityAverage)
                 row.put("fa_username", stats.faUsername)
                 row.put("fa_at", stats.faAt)
-
-
 
                 if (row.get("display_difficulty") != null) {
                     db.insertWithOnConflict("climb_stats", null, row, CONFLICT_REPLACE)
@@ -96,8 +94,7 @@ object RestClient {
         }
     }
 
-
-    private suspend fun updateClimbs(newClimbs: List<SharedSyncResponse.PUT.Climb>, date: String) {
+    private suspend fun updateClimbs(newClimbs: List<SyncResponse.PUT.Climb>, date: String) {
         Log.d("Mkb4", "in updateClimbs")
         withContext(Dispatchers.IO) {
             newClimbs.forEach { climb ->
@@ -127,11 +124,98 @@ object RestClient {
             val syncDateRow = ContentValues(2)
             syncDateRow.put("table_name", "climbs")
             syncDateRow.put("last_synchronized_at", date)
-            var numOfRows = db.update("shared_syncs", syncDateRow, "table_name = ?", arrayOf("climbs"))
+            var numOfRows =
+                db.update("shared_syncs", syncDateRow, "table_name = ?", arrayOf("climbs"))
             Log.d("MKB4", numOfRows.toString())
         }
     }
 
+    suspend fun downloadUserData() {
+        if (this::client.isInitialized) {
+            withContext(Dispatchers.IO) {
+                val syncResponse: SyncResponse =
+                    client.post("https://api.kilterboardapp.com/v1/sync") {
+                        contentType(ContentType.Application.Json)
+                        setBody(createUserSyncRequestContent(415940))
+                    }.body()
+
+                var ascentsDate = ""
+                var bidsDate = ""
+                syncResponse.pUT.userSyncs.forEach { row ->
+                    if (row.tableName == "ascents") {
+                        ascentsDate = row.lastSynchronizedAt
+
+                    }
+                    if (row.tableName == "bids") {
+                        bidsDate = row.lastSynchronizedAt
+
+                    }
+                }
+
+                updateAscents(syncResponse.pUT.ascents, ascentsDate)
+                //update(syncResponse.pUT.climbStats, bidsDate)
+            }
+
+        } else {
+            Log.d("MKB4", "not inited")
+        }
+    }
+
+    private suspend fun updateAscents(newAscents: List<SyncResponse.PUT.Ascent>, date: String) {
+        Log.d("Mkb4", "in updateAscents")
+        withContext(Dispatchers.IO) {
+            newAscents.forEach { ascent ->
+                val row = ContentValues(18)
+                row.put("uuid", ascent.uuid)
+                row.put("wall_uuid", ascent.wallUuid)
+                row.put("climb_uuid", ascent.climbUuid)
+                row.put("angle", ascent.angle)
+                row.put("is_mirror", ascent.isMirror)
+                row.put("user_id", ascent.userId)
+                row.put("attempt_id", ascent.attemptId)
+                row.put("bid_count", ascent.bidCount)
+                row.put("quality", ascent.quality)
+                row.put("difficulty", ascent.difficulty)
+                row.put("is_benchmark", ascent.isBenchmark)
+                row.put("comment", ascent.comment)
+                row.put("climbed_at", ascent.climbedAt)
+                row.put("created_at", ascent.createdAt)
+
+                db.insertWithOnConflict("ascents", null, row, CONFLICT_REPLACE)
+            }
+
+            val syncDateRow = ContentValues(1)
+            syncDateRow.put("last_synchronized_at", date)
+            val numOfRows =
+                db.update("user_syncs", syncDateRow, "table_name = ?", arrayOf("ascents"))
+            Log.d("MKB4", numOfRows.toString())
+        }
+    }
+
+    private suspend fun createUserSyncRequestContent(id: Int): String = withContext(Dispatchers.IO) {
+
+        val syncsCursor = db.query(
+            "user_syncs", null, "user_id = ?", arrayOf("415940"), null, null, null
+        )
+
+        val userSyncs = ArrayList<UserSyncRequest.GET.Query.Syncs.UserSync>(8)
+        while (syncsCursor.moveToNext()) {
+            val entry = UserSyncRequest.GET.Query.Syncs.UserSync(
+                userId = id,
+                lastSynchronizedAt = syncsCursor.getString(2),
+                tableName = syncsCursor.getString(1)
+            )
+            userSyncs.add(entry)
+        }
+        syncsCursor.close()
+
+        val syncs = UserSyncRequest.GET.Query.Syncs(userSyncs)
+        val query = UserSyncRequest.GET.Query(syncs = syncs)
+        val get = UserSyncRequest.GET(query = query)
+        val userSyncRequest = UserSyncRequest(gET = get)
+        val json = Json { encodeDefaults = true }
+        return@withContext json.encodeToString<UserSyncRequest>(userSyncRequest)
+    }
 
     private suspend fun createSharedSyncRequestContent(): String = withContext(Dispatchers.IO) {
 

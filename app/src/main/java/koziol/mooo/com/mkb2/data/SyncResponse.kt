@@ -5,12 +5,16 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class SharedSyncResponse(
+data class SyncResponse(
     @SerialName("PUT")
     val pUT: PUT = PUT()
 ) {
     @Serializable
     data class PUT(
+        @SerialName("ascents")
+        val ascents: List<Ascent> = listOf(),
+        @SerialName("bids")
+        val bids: List<Bid> = listOf(),
         @SerialName("climb_stats")
         val climbStats: List<ClimbStat> = listOf(),
         @SerialName("climbs")
@@ -22,6 +26,68 @@ data class SharedSyncResponse(
         @SerialName("users")
         val users: List<User> = listOf()
     ) {
+        @Serializable
+        data class Ascent(
+            @SerialName("angle")
+            val angle: Int = 0,
+            @SerialName("attempt_id")
+            val attemptId: Int = 0,
+            @SerialName("bid_count")
+            val bidCount: Int = 0,
+            @SerialName("climb_uuid")
+            val climbUuid: String = "",
+            @SerialName("climbed_at")
+            val climbedAt: String = "",
+            @SerialName("comment")
+            val comment: String = "",
+            @SerialName("created_at")
+            val createdAt: String = "",
+            @SerialName("difficulty")
+            val difficulty: Int = 0,
+            @SerialName("is_benchmark")
+            val isBenchmark: Boolean = false,
+            @SerialName("is_listed")
+            val isListed: Boolean = false,
+            @SerialName("is_mirror")
+            val isMirror: Boolean = false,
+            @SerialName("quality")
+            val quality: Int = 0,
+            @SerialName("updated_at")
+            val updatedAt: String = "",
+            @SerialName("user_id")
+            val userId: Int = 0,
+            @SerialName("uuid")
+            val uuid: String = "",
+            @SerialName("wall_uuid")
+            val wallUuid: String? = null
+        )
+
+        @Serializable
+        data class Bid(
+            @SerialName("angle")
+            val angle: Int = 0,
+            @SerialName("bid_count")
+            val bidCount: Int = 0,
+            @SerialName("climb_uuid")
+            val climbUuid: String = "",
+            @SerialName("climbed_at")
+            val climbedAt: String = "",
+            @SerialName("comment")
+            val comment: String = "",
+            @SerialName("created_at")
+            val createdAt: String = "",
+            @SerialName("is_listed")
+            val isListed: Boolean = false,
+            @SerialName("is_mirror")
+            val isMirror: Boolean = false,
+            @SerialName("updated_at")
+            val updatedAt: String = "",
+            @SerialName("user_id")
+            val userId: Int = 0,
+            @SerialName("uuid")
+            val uuid: String = ""
+        )
+
         @Serializable
         data class ClimbStat(
             @SerialName("angle")

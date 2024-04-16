@@ -47,11 +47,13 @@ class FilterViewModel(private val savedStateHandle: SavedStateHandle) : ViewMode
             minAscents = numOfAscentsOptions[savedStateHandle["minAscents"] ?: 0],
             setterName = "",
             includeMyAscents = (savedStateHandle["myAscents"]
-                ?: FilterOptions.INCLUDE) == FilterOptions.INCLUDE,
+                ?: FilterOptions.INCLUDE) == FilterOptions.INCLUDE || (savedStateHandle["myAscents"]
+                ?: FilterOptions.EXCLUSIVE) == FilterOptions.EXCLUSIVE,
             onlyMyAscents = (savedStateHandle["myAscents"]
                 ?: FilterOptions.INCLUDE) == FilterOptions.EXCLUSIVE,
             includeMyTries = (savedStateHandle["myTries"]
-                ?: FilterOptions.INCLUDE) == FilterOptions.INCLUDE,
+                ?: FilterOptions.INCLUDE) == FilterOptions.INCLUDE || (savedStateHandle["myTries"]
+                ?: FilterOptions.EXCLUSIVE) == FilterOptions.EXCLUSIVE,
             onlyMyTries = (savedStateHandle["myTries"]
                 ?: FilterOptions.INCLUDE) == FilterOptions.EXCLUSIVE,
         )

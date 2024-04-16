@@ -5,7 +5,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class SharedSyncRequest(
+data class UserSyncRequest(
     @SerialName("client")
     val client: Client = Client(),
     @SerialName("GET")
@@ -39,19 +39,23 @@ data class SharedSyncRequest(
             @SerialName("syncs")
             val syncs: Syncs,
             @SerialName("tables")
-            val tables: List<String> = listOf("climbs", "climb_stats"),
+            val tables: List<String> = listOf("ascents", "bids"),
+            @SerialName("user_id")
+            val userId: Int = 415940
         ) {
             @Serializable
             data class Syncs(
-                @SerialName("shared_syncs")
-                val sharedSyncs: List<SharedSync>,
+                @SerialName("user_syncs")
+                val userSyncs: List<UserSync>,
             ) {
                 @Serializable
-                data class SharedSync(
+                data class UserSync(
                     @SerialName("last_synchronized_at")
                     val lastSynchronizedAt: String,
                     @SerialName("table_name")
-                    val tableName: String
+                    val tableName: String,
+                    @SerialName("user_id")
+                    val userId: Int = 415940
                 )
             }
         }
