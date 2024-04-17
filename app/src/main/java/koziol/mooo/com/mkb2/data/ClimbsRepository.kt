@@ -19,7 +19,17 @@ object ClimbsRepository {
             triggerListUpdate()
         }
 
-    var currentClimb: Climb = Climb()
+    var currentClimb = MutableStateFlow(Climb())
+
+    fun goToNextClimb() {
+        val index = _climbs.value.indexOf(currentClimb.value)
+        currentClimb.value = _climbs.value.getOrElse(index-1) { currentClimb.value }
+    }
+
+    fun goToPreviousClimb() {
+        val index = _climbs.value.indexOf(currentClimb.value)
+        currentClimb.value = _climbs.value.getOrElse(index+1) { currentClimb.value }
+    }
 
     private val _climbs = MutableStateFlow(emptyList<Climb>())
     val climbs = _climbs.asStateFlow()

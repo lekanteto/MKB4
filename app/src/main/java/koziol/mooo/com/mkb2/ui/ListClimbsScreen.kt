@@ -1,6 +1,5 @@
 package koziol.mooo.com.mkb2.ui
 
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -10,8 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Face
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -44,9 +41,12 @@ fun ListClimbsScreen(
         LocalContext.current as ComponentActivity
     )
 ) {
+    val isDownloading by listClimbsViewModel.isDownloading.collectAsState()
 
     Scaffold(topBar = { ListClimbsTopBar(destinations) }, bottomBar = {
-        ClimbsBottomBar(destinations)
+        ClimbsBottomBar(
+            destinations, listClimbsViewModel::downloadSyncTables, isDownloading, {}, true
+        )
     }, content = { innerPadding ->
         Column(
             modifier = Modifier.padding(innerPadding)
@@ -77,8 +77,7 @@ fun ListClimbsScreen(
                     } else {
                         items(climbs) { climb ->
                             ListItem(modifier = Modifier.clickable(onClick = {
-                                Log.d("Mkb2", "Climb in list tapped")
-                                ClimbsRepository.currentClimb = climb
+                                ClimbsRepository.currentClimb.value = climb
                                 destinations["displayBoard"]?.invoke()
                             }),
                                 overlineContent = { Text("${climb.ascents}") },
@@ -114,7 +113,11 @@ fun ListClimbsScreen(
 
 @Composable
 fun ClimbsBottomBar(
-    destinations: Map<String, () -> Unit>
+    destinations: Map<String, () -> Unit>,
+    download: () -> Unit,
+    isDownloading: Boolean,
+    login: () -> Unit,
+    isLoggingIn: Boolean
 ) {
     BottomAppBar(actions = {
         NavigationBarItem(icon = {
@@ -122,16 +125,24 @@ fun ClimbsBottomBar(
                 painter = painterResource(id = R.drawable.outline_new_window_24px),
                 contentDescription = "Set Boulder"
             )
-        },
-            //label = { Text("Neuer Boulder") },
-            selected = false, onClick = { })
-        NavigationBarItem(icon = {
-            Icon(
-                Icons.Outlined.Face, contentDescription = "about you"
-            )
-        },
-            //label = { Text("Mein Profil") },
-            selected = false, onClick = { })
+        }, selected = false, onClick = { })
+        NavigationBarItem(
+            icon = {
+                Icon(
+                    painter = painterResource(id = R.drawable.outline_login_24),
+                    contentDescription = "Log in on server"
+                )
+            }, selected = isDownloading, onClick = login, enabled = !isLoggingIn
+        )
+        NavigationBarItem(
+            icon = {
+                Icon(
+                    painter = painterResource(id = R.drawable.outline_cloud_download_24),
+                    contentDescription = "Download data from server"
+                )
+            }, selected = isDownloading, onClick = download, enabled = !isDownloading
+        )
+
 
     }, floatingActionButton = {
         FloatingActionButton(
@@ -172,11 +183,11 @@ fun ListClimbsTopBar(
                     contentDescription = "Localized description"
                 )
             }
-                        OutlinedIconButton(onClick = destinations["climbsFilter"] ?: {}, content = {
-                            Icon(
-                                painter = painterResource(id = R.drawable.outline_filter_list_24),
-                                contentDescription = "Filter bookmarks"
-                            )
-                        })
+            OutlinedIconButton(onClick = destinations["climbsFilter"] ?: {}, content = {
+                Icon(
+                    painter = painterResource(id = R.drawable.outline_filter_list_24),
+                    contentDescription = "Filter bookmarks"
+                )
+            })
         })
 }

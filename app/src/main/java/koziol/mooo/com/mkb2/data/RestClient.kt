@@ -130,13 +130,13 @@ object RestClient {
         }
     }
 
-    suspend fun downloadUserData() {
+    suspend fun downloadUserData(userId: Int) {
         if (this::client.isInitialized) {
             withContext(Dispatchers.IO) {
                 val syncResponse: SyncResponse =
                     client.post("https://api.kilterboardapp.com/v1/sync") {
                         contentType(ContentType.Application.Json)
-                        setBody(createUserSyncRequestContent(415940))
+                        setBody(createUserSyncRequestContent(userId))
                     }.body()
 
                 var ascentsDate = ""
@@ -152,7 +152,7 @@ object RestClient {
                     }
                 }
 
-                updateAscents(syncResponse.pUT.ascents, ascentsDate)
+                updateAscents(syncResponse.pUT.ascents, ascentsDate, userId)
                 //update(syncResponse.pUT.climbStats, bidsDate)
             }
 
@@ -161,13 +161,13 @@ object RestClient {
         }
     }
 
-    private suspend fun updateAscents(newAscents: List<SyncResponse.PUT.Ascent>, date: String) {
+    private suspend fun updateAscents(newAscents: List<SyncResponse.PUT.Ascent>, date: String, userId: Int) {
         Log.d("Mkb4", "in updateAscents")
         withContext(Dispatchers.IO) {
             newAscents.forEach { ascent ->
                 val row = ContentValues(18)
                 row.put("uuid", ascent.uuid)
-                row.put("wall_uuid", ascent.wallUuid)
+                //row.put("wall_uuid", ascent.wallUuid)
                 row.put("climb_uuid", ascent.climbUuid)
                 row.put("angle", ascent.angle)
                 row.put("is_mirror", ascent.isMirror)
@@ -184,10 +184,13 @@ object RestClient {
                 db.insertWithOnConflict("ascents", null, row, CONFLICT_REPLACE)
             }
 
-            val syncDateRow = ContentValues(1)
+            val syncDateRow = ContentValues(3)
+            syncDateRow.put("user_id", userId)
+            syncDateRow.put("table_name", "ascents")
             syncDateRow.put("last_synchronized_at", date)
+
             val numOfRows =
-                db.update("user_syncs", syncDateRow, "table_name = ?", arrayOf("ascents"))
+                db.insertWithOnConflict("user_syncs", null, syncDateRow, CONFLICT_REPLACE)
             Log.d("MKB4", numOfRows.toString())
         }
     }

@@ -1,7 +1,9 @@
 package koziol.mooo.com.mkb2.ui
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.Column
@@ -17,7 +19,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -30,38 +32,40 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.IntSize
+import androidx.lifecycle.viewmodel.compose.viewModel
 import koziol.mooo.com.mkb2.R
-import koziol.mooo.com.mkb2.data.Climb
-import koziol.mooo.com.mkb2.data.ClimbsRepository
+import kotlin.math.absoluteValue
+import kotlin.math.roundToInt
 
 
 @Composable
-fun BoardScreen(destinations: Map<String, () -> Unit>, climb: Climb) {
+fun BoardScreen(
+    destinations: Map<String, () -> Unit>, boardViewModel: BoardViewModel = viewModel()
+) {
+
+    val climb by boardViewModel.climb.collectAsState()
+
     Scaffold(bottomBar = {
-        BoardBottomBar(destinations)
+        BoardBottomBar(destinations, climb.uuid)
     }) { paddingValues ->
-        var lastDrag = remember { mutableFloatStateOf(0f) }
+        var dragOffset by remember { mutableFloatStateOf(0f) }
         Column(
             modifier = Modifier.padding(paddingValues)
         ) {
             Text(
-                text = ClimbsRepository.currentClimb.name + " " + lastDrag.floatValue.toString()
+                text = climb.name + " " + climb.grade + " " + (climb.rating * 100).roundToInt()/100f
             )
             // set up all transformation states
             var zoomFactor by remember { mutableFloatStateOf(1f) }
             var panOffset by remember { mutableStateOf(Offset.Zero) }
-            var imageSize by remember { mutableStateOf(IntSize.Zero) }
-            val state = rememberTransformableState { zoomChange, offsetChange, _ ->
-                zoomFactor = (zoomFactor * zoomChange).coerceIn(1F, 5F)
 
-                if (zoomFactor == 1f) {
-                    lastDrag.floatValue = offsetChange.x
-                }
+            var imageSize by remember { mutableStateOf(IntSize.Zero) }
+            val panAndZoomState = rememberTransformableState { zoomChange, offsetChange, _ ->
+                zoomFactor = (zoomFactor * zoomChange).coerceIn(1F, 5F)
 
                 val newOffset = panOffset + offsetChange * zoomFactor
 
@@ -84,7 +88,7 @@ fun BoardScreen(destinations: Map<String, () -> Unit>, climb: Climb) {
                         translationX = panOffset.x,
                         translationY = panOffset.y,
                     )
-                    .transformable(state = state)
+                    .transformable(state = panAndZoomState)
                     .drawWithContent {
                         drawContent()
                         for (hold in climb.getHoldsList()) {
@@ -94,14 +98,27 @@ fun BoardScreen(destinations: Map<String, () -> Unit>, climb: Climb) {
                                 ), 1F, style = Stroke(7F)
                             )
                         }
-                    })
+                    }
+                    .draggable(orientation = Orientation.Horizontal,
+                        enabled = zoomFactor == 1f,
+                        onDragStarted = { dragOffset = 0f},
+                        state = rememberDraggableState { delta ->
+                            dragOffset += delta
+                            if (dragOffset.absoluteValue/imageSize.width > 0.15) {
+                                boardViewModel.moveToNextClimb(dragOffset < 0)
+                                dragOffset = 0f
+                            }
+                        }
+
+                    )
+            )
         }
     }
 }
 
 @Composable
 fun BoardBottomBar(
-    destinations: Map<String, () -> Unit>
+    destinations: Map<String, () -> Unit>, climbUuid: String
 ) {
     val uriHandler = LocalUriHandler.current
 
@@ -140,7 +157,7 @@ fun BoardBottomBar(
             )
         },
             selected = false,
-            onClick = { uriHandler.openUri("https://kilterboardapp.com/climbs/${ClimbsRepository.currentClimb.uuid}") })
+            onClick = { uriHandler.openUri("https://kilterboardapp.com/climbs/${climbUuid}") })
 
     }, floatingActionButton = {
         FloatingActionButton(

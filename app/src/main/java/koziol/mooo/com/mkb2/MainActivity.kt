@@ -38,7 +38,7 @@ class MainActivity : ComponentActivity() {
             ClimbsRepository.setup(db)
             async { RestClient.setup(db) }.await()
             //RestClient.downloadSharedData()
-            RestClient.downloadUserData()
+            //RestClient.downloadUserData()
             _isInitializing.update { false }
             Log.d("MKB", "end init")
             ClimbsRepository.triggerListUpdate()
