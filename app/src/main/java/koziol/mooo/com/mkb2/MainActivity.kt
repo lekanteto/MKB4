@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import koziol.mooo.com.mkb2.data.ClimbsRepository
+import koziol.mooo.com.mkb2.data.ConfigRepository
 import koziol.mooo.com.mkb2.data.HoldsRepository
 import koziol.mooo.com.mkb2.data.OriginalDbOpenHelper
 import koziol.mooo.com.mkb2.data.RestClient
@@ -33,6 +34,7 @@ class MainActivity : ComponentActivity() {
         CoroutineScope(Dispatchers.IO).launch {
             _isInitializing.update { true }
             Log.d("MKB", "start init")
+            ConfigRepository.setup(applicationContext)
             db = async { openDb() }.await()
             HoldsRepository.setup(db)
             ClimbsRepository.setup(db)

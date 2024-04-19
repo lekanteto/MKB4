@@ -124,7 +124,7 @@ object RestClient {
             val syncDateRow = ContentValues(2)
             syncDateRow.put("table_name", "climbs")
             syncDateRow.put("last_synchronized_at", date)
-            var numOfRows =
+            val numOfRows =
                 db.update("shared_syncs", syncDateRow, "table_name = ?", arrayOf("climbs"))
             Log.d("MKB4", numOfRows.toString())
         }
@@ -133,10 +133,11 @@ object RestClient {
     suspend fun downloadUserData(userId: Int) {
         if (this::client.isInitialized) {
             withContext(Dispatchers.IO) {
+                val requestBody = createUserSyncRequestContent(userId)
                 val syncResponse: SyncResponse =
                     client.post("https://api.kilterboardapp.com/v1/sync") {
                         contentType(ContentType.Application.Json)
-                        setBody(createUserSyncRequestContent(userId))
+                        setBody(requestBody)
                     }.body()
 
                 var ascentsDate = ""
@@ -153,7 +154,7 @@ object RestClient {
                 }
 
                 updateAscents(syncResponse.pUT.ascents, ascentsDate, userId)
-                //update(syncResponse.pUT.climbStats, bidsDate)
+                updateBids(syncResponse.pUT.bids, bidsDate, userId)
             }
 
         } else {
@@ -194,6 +195,36 @@ object RestClient {
             Log.d("MKB4", numOfRows.toString())
         }
     }
+
+    private suspend fun updateBids(newBids: List<SyncResponse.PUT.Bid>, date: String, userId: Int) {
+        Log.d("Mkb4", "in updateBids")
+        withContext(Dispatchers.IO) {
+            newBids.forEach { bid ->
+                val row = ContentValues(9)
+                row.put("uuid", bid.uuid)
+                row.put("user_id", bid.userId)
+                row.put("climb_uuid", bid.climbUuid)
+                row.put("angle", bid.angle)
+                row.put("is_mirror", bid.isMirror)
+                row.put("bid_count", bid.bidCount)
+                row.put("comment", bid.comment)
+                row.put("climbed_at", bid.climbedAt)
+                row.put("created_at", bid.createdAt)
+
+                db.insertWithOnConflict("bids", null, row, CONFLICT_REPLACE)
+            }
+
+            val syncDateRow = ContentValues(3)
+            syncDateRow.put("user_id", userId)
+            syncDateRow.put("table_name", "bids")
+            syncDateRow.put("last_synchronized_at", date)
+
+            val numOfRows =
+                db.insertWithOnConflict("user_syncs", null, syncDateRow, CONFLICT_REPLACE)
+            Log.d("MKB4", numOfRows.toString())
+        }
+    }
+
 
     private suspend fun createUserSyncRequestContent(id: Int): String = withContext(Dispatchers.IO) {
 
@@ -248,13 +279,16 @@ object RestClient {
     suspend fun setup(db: SQLiteDatabase) {
 
         this.db = db
+        val user = ConfigRepository.getCurrentUsername()
+        val token: String = ConfigRepository.getSessionTokenForUser(user ?: "") ?: ""
+
         withContext(Dispatchers.Default) {
             client = HttpClient(CIO) {
                 expectSuccess = true
                 install(Auth) {
                     bearer {
                         loadTokens {
-                            BearerTokens("651d46009d9a0d59fe6123f53805da0f7acf11d1", "")
+                            BearerTokens(token, "")
                         }
                     }
                 }
@@ -263,5 +297,12 @@ object RestClient {
                 }
             }
         }
+    }
+
+    suspend fun login(username: String, password: String) {
+        withContext(Dispatchers.IO) {
+            ConfigRepository.saveSession("lekanteto", 415940, "651d46009d9a0d59fe6123f53805da0f7acf11d1")
+        }
+
     }
 }

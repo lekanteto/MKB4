@@ -27,6 +27,8 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -45,7 +47,7 @@ fun ListClimbsScreen(
 
     Scaffold(topBar = { ListClimbsTopBar(destinations) }, bottomBar = {
         ClimbsBottomBar(
-            destinations, listClimbsViewModel::downloadSyncTables, isDownloading, {}, true
+            destinations, listClimbsViewModel::downloadSyncTables, isDownloading, false
         )
     }, content = { innerPadding ->
         Column(
@@ -116,23 +118,27 @@ fun ClimbsBottomBar(
     destinations: Map<String, () -> Unit>,
     download: () -> Unit,
     isDownloading: Boolean,
-    login: () -> Unit,
     isLoggingIn: Boolean
 ) {
+    val openLoginDialog = remember { mutableStateOf(false) }
+
     BottomAppBar(actions = {
         NavigationBarItem(icon = {
             Icon(
                 painter = painterResource(id = R.drawable.outline_new_window_24px),
                 contentDescription = "Set Boulder"
             )
-        }, selected = false, onClick = { })
+        }, selected = false, onClick = { }, enabled = false)
         NavigationBarItem(
             icon = {
                 Icon(
                     painter = painterResource(id = R.drawable.outline_login_24),
                     contentDescription = "Log in on server"
                 )
-            }, selected = isDownloading, onClick = login, enabled = !isLoggingIn
+            },
+            selected = isLoggingIn,
+            onClick = { openLoginDialog.value = true },
+            enabled = !isLoggingIn
         )
         NavigationBarItem(
             icon = {
@@ -156,6 +162,12 @@ fun ClimbsBottomBar(
             )
         }
     })
+
+    if (openLoginDialog.value) {
+        LoginDialog {
+            openLoginDialog.value = false
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
