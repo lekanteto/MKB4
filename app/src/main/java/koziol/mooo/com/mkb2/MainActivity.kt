@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.room.Room
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -15,8 +16,10 @@ import kotlinx.coroutines.launch
 import koziol.mooo.com.mkb2.data.ClimbsRepository
 import koziol.mooo.com.mkb2.data.ConfigRepository
 import koziol.mooo.com.mkb2.data.HoldsRepository
+import koziol.mooo.com.mkb2.data.MkbDatabase
 import koziol.mooo.com.mkb2.data.OriginalDbOpenHelper
 import koziol.mooo.com.mkb2.data.RestClient
+import koziol.mooo.com.mkb2.data.SetterRepository
 import koziol.mooo.com.mkb2.ui.MainSurface
 import koziol.mooo.com.mkb2.ui.theme.MKB2Theme
 
@@ -26,6 +29,9 @@ class MainActivity : ComponentActivity() {
     private lateinit var db: SQLiteDatabase
     private val _isInitializing = MutableStateFlow(false)
     val isInitializing = _isInitializing.asStateFlow()
+
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -38,9 +44,13 @@ class MainActivity : ComponentActivity() {
             db = async { openDb() }.await()
             HoldsRepository.setup(db)
             ClimbsRepository.setup(db)
+            SetterRepository.setup(db)
             async { RestClient.setup(db) }.await()
             //RestClient.downloadSharedData()
             //RestClient.downloadUserData()
+
+            //val mkbDb = Room.databaseBuilder(applicationContext, MkbDatabase::class.java, "mkb.db").build()
+            //val bookmarkDao = mkbDb.filterDao()
             _isInitializing.update { false }
             Log.d("MKB", "end init")
             ClimbsRepository.triggerListUpdate()

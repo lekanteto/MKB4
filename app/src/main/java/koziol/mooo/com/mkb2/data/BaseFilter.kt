@@ -15,4 +15,7 @@ data class BaseFilter(
     val onlyMyAscents: Boolean = false,
     val includeMyTries: Boolean = true,
     val onlyMyTries: Boolean = false,
-    )
+    ) {
+
+
+}

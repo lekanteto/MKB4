@@ -45,7 +45,7 @@ class FilterViewModel(private val savedStateHandle: SavedStateHandle) : ViewMode
             maxGradeDeviation = ((savedStateHandle["maxDeviation"]
                 ?: 0.5f) * 10).roundToInt() / 10f,
             minAscents = numOfAscentsOptions[savedStateHandle["minAscents"] ?: 0],
-            setterName = "",
+            setterName = savedStateHandle["setterName"] ?: "",
             includeMyAscents = (savedStateHandle["myAscents"]
                 ?: FilterOptions.INCLUDE) == FilterOptions.INCLUDE || (savedStateHandle["myAscents"]
                 ?: FilterOptions.EXCLUSIVE) == FilterOptions.EXCLUSIVE,
@@ -79,6 +79,13 @@ class FilterViewModel(private val savedStateHandle: SavedStateHandle) : ViewMode
     val theirAscents = savedStateHandle.getStateFlow("theirAscents", FilterOptions.INCLUDE)
     val theirTries = savedStateHandle.getStateFlow("theirTries", FilterOptions.INCLUDE)
     val theirBoulders = savedStateHandle.getStateFlow("theirBoulders", FilterOptions.INCLUDE)
+
+    val setterName = savedStateHandle.getStateFlow("setterName", "")
+
+    fun updateSetterName(name: String) {
+        savedStateHandle["setterName"] = name
+    }
+
 
     fun updateGradeRange(min: Int, max: Int) {
         savedStateHandle["minGrade"] = min
@@ -135,6 +142,8 @@ class FilterViewModel(private val savedStateHandle: SavedStateHandle) : ViewMode
 
         savedStateHandle["minAscents"] = 0
 
+        savedStateHandle["setterName"] = ""
+
         savedStateHandle["myAscents"] = FilterOptions.INCLUDE
         savedStateHandle["myTries"] = FilterOptions.INCLUDE
         savedStateHandle["myBoulders"] = FilterOptions.INCLUDE
@@ -155,14 +164,14 @@ class FilterViewModel(private val savedStateHandle: SavedStateHandle) : ViewMode
 
     fun applyHoldsFilter(respectHoldRoles: Boolean = true) {
 
-        var holdsFilter = "%"
+        var holdsFilter = ""
         selectedHoldsList.sortedBy { it.id }.forEach { hold ->
-            holdsFilter += "p" + hold.id + "r"
+            holdsFilter += "%p" + hold.id + "r"
             if (respectHoldRoles) {
                 holdsFilter += hold.role.id
             }
-            holdsFilter += "%"
         }
+        holdsFilter += "%"
         savedStateHandle["holds"] = holdsFilter
     }
 

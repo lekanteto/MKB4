@@ -1,6 +1,5 @@
 package koziol.mooo.com.mkb2.ui
 
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -23,7 +22,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -101,11 +104,21 @@ fun FilterClimbsScreen(
                 onTriesChanged = filterViewModel::updateTheirTries,
                 onBouldersChanged = filterViewModel::updateTheirBoulders
             )
+            Row {
+                HoldsFilter(
+                    destinations["holdsFilter"],
+                    isSelected = filterViewModel.selectedHoldsList.isNotEmpty()
+                )
+                val setterLabel =
+                    filterViewModel.setterName.collectAsState().value.ifEmpty { "Setter" }
+                SetterFilter(
+                    setterLabel,
+                    onSelectSetter = filterViewModel::updateSetterName,
+                    isSelected = filterViewModel.setterName.collectAsState().value.isNotEmpty()
+                )
 
-            HoldsFilter(
-                destinations["holdsFilter"],
-                isSelected = filterViewModel.selectedHoldsList.isNotEmpty()
-            )
+            }
+
         }
     })
 }
@@ -440,6 +453,33 @@ fun TheirClimbsFilter(
             },
         )
     }
+}
+
+@Composable
+fun SetterFilter(setterName: String?, onSelectSetter: (String) -> Unit, isSelected: Boolean) {
+    var showSetterDialog by remember { mutableStateOf(false) }
+
+    if (showSetterDialog) {
+        SetterListDialog(onSelect = onSelectSetter, onDismissRequest = { showSetterDialog = false })
+    }
+    FilterChip(
+        modifier = Modifier.padding(5.dp),
+        onClick = {
+            showSetterDialog = true
+        },
+
+        label = {
+            Text(setterName ?: "Setter")
+        },
+        selected = isSelected,
+        leadingIcon = {
+            Icon(
+                painter = painterResource(id = R.drawable.outline_engineering_24),
+                contentDescription = "setter",
+                modifier = Modifier.size(FilterChipDefaults.IconSize)
+            )
+        },
+    )
 }
 
 @Composable

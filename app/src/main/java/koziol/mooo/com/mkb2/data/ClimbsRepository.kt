@@ -72,7 +72,7 @@ object ClimbsRepository {
         }
     }
 
-    private suspend fun getFilteredClimbs(filter: BaseFilter): List<Climb> {
+    suspend fun getFilteredClimbs(filter: BaseFilter): List<Climb> {
         return withContext(Dispatchers.IO) {
             _isQuerying.update { true }
             val climbsList = mutableListOf<Climb>()

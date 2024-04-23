@@ -8,14 +8,15 @@ espressoCore = "3.5.1"
 kotlinxSerializationJson = "1.6.3"
 lifecycleRuntimeKtx = "2.7.0"
 activityCompose = "1.8.2"
-composeBom = "2024.04.00"
+composeBom = "2024.04.01"
 kotlinxCoroutinesAndroid = "1.8.0"
 lifecycleViewmodelCompose = "2.7.0"
 navigationCompose = "2.7.7"
 lifecycleRuntimeCompose = "2.7.0"
 ktorClient = "2.3.10"
 slf4jNop = "2.0.13"
-datastorePreferences = "1.1.0-rc01"
+datastorePreferences = "1.1.0"
+room = "2.6.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -29,7 +30,7 @@ androidx-ui = { group = "androidx.compose.ui", name = "ui" }
 androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
 androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
-androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest", version = "1.6.5" }
+androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest", version = "1.6.6" }
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinxCoroutinesAndroid" }
@@ -46,6 +47,9 @@ ktor-client-content-negotiation = { group = "io.ktor", name = "ktor-client-conte
 slf4j-nop = { group = "org.slf4j", name = "slf4j-nop", version.ref = "slf4jNop" }
 androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastorePreferences" }
 androidx-datastore-preferences-core = { group = "androidx.datastore", name = "datastore-preferences-core", version.ref = "datastorePreferences" }
+androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
+androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
+androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 
 
 [plugins]

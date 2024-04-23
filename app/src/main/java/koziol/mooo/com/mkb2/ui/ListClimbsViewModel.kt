@@ -8,17 +8,16 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import koziol.mooo.com.mkb2.data.ClimbsRepository
 import koziol.mooo.com.mkb2.data.RestClient
 
 class ListClimbsViewModel : ViewModel() {
 
-    var climbList = ClimbsRepository.climbs
-
     private val _searchText = MutableStateFlow("")
     val searchText = _searchText.asStateFlow()
+
+    var climbList = ClimbsRepository.climbs
 
     val isSearching = ClimbsRepository.isQuerying
 
@@ -40,10 +39,10 @@ class ListClimbsViewModel : ViewModel() {
 
     fun downloadSyncTables() {
         CoroutineScope(Dispatchers.Main).launch {
-            _isDownloading.update { true }
+            _isDownloading.value = true
             RestClient.downloadSharedData()
             RestClient.downloadUserData(415940)
-            _isDownloading.update { false }
+            _isDownloading.value = false
         }
     }
 }

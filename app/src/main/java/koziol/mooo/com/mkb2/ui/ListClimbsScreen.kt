@@ -120,7 +120,7 @@ fun ClimbsBottomBar(
     isDownloading: Boolean,
     isLoggingIn: Boolean
 ) {
-    val openLoginDialog = remember { mutableStateOf(false) }
+    val showLoginDialog = remember { mutableStateOf(false) }
 
     BottomAppBar(actions = {
         NavigationBarItem(icon = {
@@ -137,7 +137,7 @@ fun ClimbsBottomBar(
                 )
             },
             selected = isLoggingIn,
-            onClick = { openLoginDialog.value = true },
+            onClick = { showLoginDialog.value = true },
             enabled = !isLoggingIn
         )
         NavigationBarItem(
@@ -163,9 +163,9 @@ fun ClimbsBottomBar(
         }
     })
 
-    if (openLoginDialog.value) {
+    if (showLoginDialog.value) {
         LoginDialog {
-            openLoginDialog.value = false
+            showLoginDialog.value = false
         }
     }
 }
