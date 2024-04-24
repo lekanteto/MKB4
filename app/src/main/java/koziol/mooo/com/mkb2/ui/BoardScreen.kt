@@ -47,7 +47,7 @@ fun BoardScreen(
     destinations: Map<String, () -> Unit>, boardViewModel: BoardViewModel = viewModel()
 ) {
 
-    val climb by boardViewModel.climb.collectAsState()
+    val climb by boardViewModel.currentClimb.collectAsState()
 
     Scaffold(bottomBar = {
         BoardBottomBar(destinations, climb.uuid)
@@ -57,7 +57,7 @@ fun BoardScreen(
             modifier = Modifier.padding(paddingValues)
         ) {
             Text(
-                text = climb.name + " " + climb.grade + " " + (climb.rating * 100).roundToInt()/100f
+                text = climb.name + " " + climb.grade + " " + (climb.rating * 100).roundToInt() / 100f
             )
             // set up all transformation states
             var zoomFactor by remember { mutableFloatStateOf(1f) }
@@ -101,17 +101,16 @@ fun BoardScreen(
                     }
                     .draggable(orientation = Orientation.Horizontal,
                         enabled = zoomFactor == 1f,
-                        onDragStarted = { dragOffset = 0f},
+                        onDragStarted = { dragOffset = 0f },
                         state = rememberDraggableState { delta ->
                             dragOffset += delta
-                            if (dragOffset.absoluteValue/imageSize.width > 0.15) {
+                            if (dragOffset.absoluteValue / imageSize.width > 0.15) {
                                 boardViewModel.moveToNextClimb(dragOffset < 0)
                                 dragOffset = 0f
                             }
                         }
 
-                    )
-            )
+                    ))
         }
     }
 }

@@ -1,6 +1,6 @@
 package koziol.mooo.com.mkb2.data
 
-data class BaseFilter(
+data class ClimbFilter(
     val name: String = "",
     val holds: String = "",
     val minRating: Float = 1f,

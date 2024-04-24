@@ -67,6 +67,7 @@ class OriginalDbOpenHelper(private val context: Context) : SQLiteOpenHelper(cont
     }
 
     override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
+        Log.d("MKB4", "inOnUpdateDB")
         // Nothing to do
     }
 

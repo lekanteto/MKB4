@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.room.Room
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -16,7 +15,6 @@ import kotlinx.coroutines.launch
 import koziol.mooo.com.mkb2.data.ClimbsRepository
 import koziol.mooo.com.mkb2.data.ConfigRepository
 import koziol.mooo.com.mkb2.data.HoldsRepository
-import koziol.mooo.com.mkb2.data.MkbDatabase
 import koziol.mooo.com.mkb2.data.OriginalDbOpenHelper
 import koziol.mooo.com.mkb2.data.RestClient
 import koziol.mooo.com.mkb2.data.SetterRepository

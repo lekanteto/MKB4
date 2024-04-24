@@ -3,7 +3,9 @@ package koziol.mooo.com.mkb2.data
 import android.database.sqlite.SQLiteDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -13,23 +15,15 @@ object ClimbsRepository {
 
     private lateinit var db: SQLiteDatabase
 
-    var activeFilter = BaseFilter()
+    var activeFilter = ClimbFilter()
         set(value) {
             field = value
             triggerListUpdate()
         }
 
-    var currentClimb = MutableStateFlow(Climb())
+    val _filter = MutableStateFlow(ClimbFilter())
 
-    fun goToNextClimb() {
-        val index = _climbs.value.indexOf(currentClimb.value)
-        currentClimb.value = _climbs.value.getOrElse(index-1) { currentClimb.value }
-    }
-
-    fun goToPreviousClimb() {
-        val index = _climbs.value.indexOf(currentClimb.value)
-        currentClimb.value = _climbs.value.getOrElse(index+1) { currentClimb.value }
-    }
+    val currentClimb = MutableStateFlow(Climb())
 
     private val _climbs = MutableStateFlow(emptyList<Climb>())
     val climbs = _climbs.asStateFlow()
@@ -37,7 +31,7 @@ object ClimbsRepository {
     private val _isQuerying = MutableStateFlow(false)
     val isQuerying = _isQuerying.asStateFlow()
 
-    private fun convertToSqlArgs(filter: BaseFilter): Array<String> {
+    private fun convertToSqlArgs(filter: ClimbFilter): Array<String> {
         val ignoreSetter = if (filter.setterName.isEmpty()) "1" else "0"
         val ignoreHolds = if (filter.holds.isEmpty()) "1" else "0"
 
@@ -72,7 +66,11 @@ object ClimbsRepository {
         }
     }
 
-    suspend fun getFilteredClimbs(filter: BaseFilter): List<Climb> {
+    suspend fun getClimbsWithFilter(filter: ClimbFilter): Flow<List<Climb>> {
+        return getFilteredClimbs(filter).
+    }
+
+    suspend fun getFilteredClimbs(filter: ClimbFilter): List<Climb> {
         return withContext(Dispatchers.IO) {
             _isQuerying.update { true }
             val climbsList = mutableListOf<Climb>()
@@ -133,7 +131,7 @@ object ClimbsRepository {
                 )
 
 
-                if (climbsCursor.moveToFirst()) do {
+                while (climbsCursor.moveToNext()) {
                     var columnIndex = climbsCursor.getColumnIndexOrThrow("climbUuid")
                     val uuid = climbsCursor.getString(columnIndex)
 
@@ -169,7 +167,7 @@ object ClimbsRepository {
                         ascents = ascents
                     )
                     climbsList.add(currentClimb)
-                } while (climbsCursor.moveToNext())
+                }
 
                 climbsCursor.close()
             }

@@ -11,7 +11,7 @@ import koziol.mooo.com.mkb2.data.KBHold
 import kotlin.math.roundToInt
 
 class FilterViewModel(private val savedStateHandle: SavedStateHandle) : ViewModel() {
-
+    val numOfAscentsOptions = arrayOf(0, 1, 5, 10, 20, 30, 50, 100, 500, 1000)
     val gradeNames = arrayOf(
         "4a/V0",
         "4b/V0",
@@ -32,6 +32,27 @@ class FilterViewModel(private val savedStateHandle: SavedStateHandle) : ViewMode
         "7c/V9",
         "7c+/V10"
     )
+    val minGrade = savedStateHandle.getStateFlow("minGrade", 0)
+    val maxGrade = savedStateHandle.getStateFlow("maxGrade", gradeNames.size - 1)
+
+    val minDeviation = savedStateHandle.getStateFlow("minDeviation", -0.5f)
+    val maxDeviation = savedStateHandle.getStateFlow("maxDeviation", 0.5f)
+
+    val minRating = savedStateHandle.getStateFlow("minRating", 1f)
+    val maxRating = savedStateHandle.getStateFlow("maxRating", 3f)
+
+    val minNumOfAscents = savedStateHandle.getStateFlow("minAscents", 0)
+
+    val myAscents = savedStateHandle.getStateFlow("myAscents", FilterOptions.INCLUDE)
+    val myTries = savedStateHandle.getStateFlow("myTries", FilterOptions.INCLUDE)
+    val myBoulders = savedStateHandle.getStateFlow("myBoulders", FilterOptions.INCLUDE)
+
+    val theirAscents = savedStateHandle.getStateFlow("theirAscents", FilterOptions.INCLUDE)
+    val theirTries = savedStateHandle.getStateFlow("theirTries", FilterOptions.INCLUDE)
+    val theirBoulders = savedStateHandle.getStateFlow("theirBoulders", FilterOptions.INCLUDE)
+
+    val setterName = savedStateHandle.getStateFlow("setterName", "")
+
 
     private fun updateFilterInRepository() {
         ClimbsRepository.activeFilter = ClimbsRepository.activeFilter.copy(
@@ -58,34 +79,9 @@ class FilterViewModel(private val savedStateHandle: SavedStateHandle) : ViewMode
                 ?: FilterOptions.INCLUDE) == FilterOptions.EXCLUSIVE,
         )
     }
-
-    val numOfAscentsOptions = arrayOf(0, 1, 5, 10, 20, 30, 50, 100, 500, 1000)
-
-    val minGrade = savedStateHandle.getStateFlow("minGrade", 0)
-    val maxGrade = savedStateHandle.getStateFlow("maxGrade", gradeNames.size - 1)
-
-    val minDeviation = savedStateHandle.getStateFlow("minDeviation", -0.5f)
-    val maxDeviation = savedStateHandle.getStateFlow("maxDeviation", 0.5f)
-
-    val minRating = savedStateHandle.getStateFlow("minRating", 1f)
-    val maxRating = savedStateHandle.getStateFlow("maxRating", 3f)
-
-    val minNumOfAscents = savedStateHandle.getStateFlow("minAscents", 0)
-
-    val myAscents = savedStateHandle.getStateFlow("myAscents", FilterOptions.INCLUDE)
-    val myTries = savedStateHandle.getStateFlow("myTries", FilterOptions.INCLUDE)
-    val myBoulders = savedStateHandle.getStateFlow("myBoulders", FilterOptions.INCLUDE)
-
-    val theirAscents = savedStateHandle.getStateFlow("theirAscents", FilterOptions.INCLUDE)
-    val theirTries = savedStateHandle.getStateFlow("theirTries", FilterOptions.INCLUDE)
-    val theirBoulders = savedStateHandle.getStateFlow("theirBoulders", FilterOptions.INCLUDE)
-
-    val setterName = savedStateHandle.getStateFlow("setterName", "")
-
     fun updateSetterName(name: String) {
         savedStateHandle["setterName"] = name
     }
-
 
     fun updateGradeRange(min: Int, max: Int) {
         savedStateHandle["minGrade"] = min
