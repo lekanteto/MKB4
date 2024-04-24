@@ -1,32 +1,35 @@
 package koziol.mooo.com.mkb2.data
 
 import android.database.sqlite.SQLiteDatabase
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 object ClimbsRepository {
 
     private lateinit var db: SQLiteDatabase
 
-    var activeFilter = ClimbFilter()
+    private val filterFlow = MutableStateFlow(ClimbFilter())
+    var activeFilter: ClimbFilter
+        get() = filterFlow.value
         set(value) {
-            field = value
-            triggerListUpdate()
+            filterFlow.value = value
         }
-
-    val _filter = MutableStateFlow(ClimbFilter())
 
     val currentClimb = MutableStateFlow(Climb())
 
-    private val _climbs = MutableStateFlow(emptyList<Climb>())
-    val climbs = _climbs.asStateFlow()
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val climbs = filterFlow.flatMapLatest { filter -> flow {
+        emit(getFilteredClimbs(filter))
+    }
+
+    }
 
     private val _isQuerying = MutableStateFlow(false)
     val isQuerying = _isQuerying.asStateFlow()
@@ -60,17 +63,7 @@ object ClimbsRepository {
         )
     }
 
-    fun triggerListUpdate() {
-        CoroutineScope(Dispatchers.IO).launch {
-            _climbs.value = getFilteredClimbs(activeFilter)
-        }
-    }
-
-    suspend fun getClimbsWithFilter(filter: ClimbFilter): Flow<List<Climb>> {
-        return getFilteredClimbs(filter).
-    }
-
-    suspend fun getFilteredClimbs(filter: ClimbFilter): List<Climb> {
+    private suspend fun getFilteredClimbs(filter: ClimbFilter): List<Climb> {
         return withContext(Dispatchers.IO) {
             _isQuerying.update { true }
             val climbsList = mutableListOf<Climb>()

@@ -51,7 +51,6 @@ class MainActivity : ComponentActivity() {
             //val bookmarkDao = mkbDb.filterDao()
             _isInitializing.update { false }
             Log.d("MKB", "end init")
-            ClimbsRepository.triggerListUpdate()
         }
 
 

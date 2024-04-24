@@ -152,9 +152,12 @@ object RestClient {
 
                     }
                 }
-
-                updateAscents(syncResponse.pUT.ascents, ascentsDate, userId)
-                updateBids(syncResponse.pUT.bids, bidsDate, userId)
+                if (ascentsDate.isNotEmpty()) {
+                    updateAscents(syncResponse.pUT.ascents, ascentsDate, userId)
+                }
+                if (bidsDate.isNotEmpty()) {
+                    updateBids(syncResponse.pUT.bids, bidsDate, userId)
+                }
             }
 
         } else {

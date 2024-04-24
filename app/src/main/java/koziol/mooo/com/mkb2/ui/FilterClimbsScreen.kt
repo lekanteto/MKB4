@@ -22,7 +22,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -52,54 +51,57 @@ fun FilterClimbsScreen(
                 .verticalScroll(rememberScrollState())
         ) {
 
-            val min by filterViewModel.minGrade.collectAsStateWithLifecycle()
-            val max by filterViewModel.maxGrade.collectAsStateWithLifecycle()
-            val minDev by filterViewModel.minDeviation.collectAsStateWithLifecycle()
-            val maxDev by filterViewModel.maxDeviation.collectAsStateWithLifecycle()
+            val filter by filterViewModel.filter.collectAsStateWithLifecycle()
+
             GradeRangeSelector(
-                selectedMin = min,
-                selectedMax = max,
-                selectedMinDev = minDev,
-                selectedMaxDev = maxDev,
+                selectedMin = filter.minGradeIndex,
+                selectedMax = filter.maxGradeIndex,
+                selectedMinDev = filter.minGradeDeviation,
+                selectedMaxDev = filter.maxGradeDeviation,
                 grades = filterViewModel.gradeNames,
                 onRangeChanged = filterViewModel::updateGradeRange,
                 onDeviationChanged = filterViewModel::updateDeviationRange
             )
 
-            val minRating by filterViewModel.minRating.collectAsStateWithLifecycle()
-            val maxRating by filterViewModel.maxRating.collectAsStateWithLifecycle()
             RatingRangeSelector(
-                selectedMin = minRating,
-                selectedMax = maxRating,
+                selectedMin = filter.minRating,
+                selectedMax = filter.maxRating,
                 onRangeChanged = filterViewModel::updateRatingRange
             )
 
-            val minAscents by filterViewModel.minNumOfAscents.collectAsStateWithLifecycle()
             MinAscentsSelector(
-                minAscents,
+                filter.minAscents,
                 options = filterViewModel.numOfAscentsOptions,
                 onValueChanged = filterViewModel::updateMinNumOfAscents
             )
 
-            val myAscents by filterViewModel.myAscents.collectAsStateWithLifecycle()
-            val myTries by filterViewModel.myTries.collectAsStateWithLifecycle()
-            val myBoulders by filterViewModel.myBoulders.collectAsStateWithLifecycle()
+            val myAscents: FilterOptions = if (filter.onlyMyAscents) {
+                FilterOptions.EXCLUSIVE
+            } else if (filter.includeMyAscents){
+                FilterOptions.INCLUDE
+            } else {
+                FilterOptions.EXCLUDE
+            }
+            val myTries: FilterOptions = if (filter.onlyMyTries) {
+                FilterOptions.EXCLUSIVE
+            } else if (filter.includeMyTries){
+                FilterOptions.INCLUDE
+            } else {
+                FilterOptions.EXCLUDE
+            }
             MyClimbsFilter(
                 ascentsOptions = myAscents,
                 triesOptions = myTries,
-                boulderFilter = myBoulders,
+                boulderFilter = FilterOptions.INCLUDE,
                 onAscentsChanged = filterViewModel::updateMyAscents,
                 onTriesChanged = filterViewModel::updateMyTries,
                 onBouldersChanged = filterViewModel::updateMyBoulders
             )
 
-            val theirAscents by filterViewModel.theirAscents.collectAsStateWithLifecycle()
-            val theirTries by filterViewModel.theirTries.collectAsStateWithLifecycle()
-            val theirBoulders by filterViewModel.theirBoulders.collectAsStateWithLifecycle()
             TheirClimbsFilter(
-                ascentsOptions = theirAscents,
-                triesOptions = theirTries,
-                boulderFilter = theirBoulders,
+                ascentsOptions = FilterOptions.INCLUDE,
+                triesOptions = FilterOptions.INCLUDE,
+                boulderFilter = FilterOptions.INCLUDE,
                 onAscentsChanged = filterViewModel::updateTheirAscents,
                 onTriesChanged = filterViewModel::updateTheirTries,
                 onBouldersChanged = filterViewModel::updateTheirBoulders
@@ -110,11 +112,11 @@ fun FilterClimbsScreen(
                     isSelected = filterViewModel.selectedHoldsList.isNotEmpty()
                 )
                 val setterLabel =
-                    filterViewModel.setterName.collectAsState().value.ifEmpty { "Setter" }
+                    filter.setterName.ifEmpty { "Setter" }
                 SetterFilter(
                     setterLabel,
                     onSelectSetter = filterViewModel::updateSetterName,
-                    isSelected = filterViewModel.setterName.collectAsState().value.isNotEmpty()
+                    isSelected = filter.setterName.isNotEmpty()
                 )
 
             }

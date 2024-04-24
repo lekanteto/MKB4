@@ -4,6 +4,8 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import kotlinx.coroutines.flow.StateFlow
+import koziol.mooo.com.mkb2.data.ClimbFilter
 import koziol.mooo.com.mkb2.data.ClimbsRepository
 import koziol.mooo.com.mkb2.data.HoldRole
 import koziol.mooo.com.mkb2.data.HoldsRepository
@@ -32,121 +34,70 @@ class FilterViewModel(private val savedStateHandle: SavedStateHandle) : ViewMode
         "7c/V9",
         "7c+/V10"
     )
-    val minGrade = savedStateHandle.getStateFlow("minGrade", 0)
-    val maxGrade = savedStateHandle.getStateFlow("maxGrade", gradeNames.size - 1)
 
-    val minDeviation = savedStateHandle.getStateFlow("minDeviation", -0.5f)
-    val maxDeviation = savedStateHandle.getStateFlow("maxDeviation", 0.5f)
-
-    val minRating = savedStateHandle.getStateFlow("minRating", 1f)
-    val maxRating = savedStateHandle.getStateFlow("maxRating", 3f)
-
-    val minNumOfAscents = savedStateHandle.getStateFlow("minAscents", 0)
-
-    val myAscents = savedStateHandle.getStateFlow("myAscents", FilterOptions.INCLUDE)
-    val myTries = savedStateHandle.getStateFlow("myTries", FilterOptions.INCLUDE)
-    val myBoulders = savedStateHandle.getStateFlow("myBoulders", FilterOptions.INCLUDE)
-
-    val theirAscents = savedStateHandle.getStateFlow("theirAscents", FilterOptions.INCLUDE)
-    val theirTries = savedStateHandle.getStateFlow("theirTries", FilterOptions.INCLUDE)
-    val theirBoulders = savedStateHandle.getStateFlow("theirBoulders", FilterOptions.INCLUDE)
-
-    val setterName = savedStateHandle.getStateFlow("setterName", "")
-
+    val filter: StateFlow<ClimbFilter> = savedStateHandle.getStateFlow("filter", ClimbFilter(minGradeIndex = 0, maxGradeIndex = 17))
 
     private fun updateFilterInRepository() {
-        ClimbsRepository.activeFilter = ClimbsRepository.activeFilter.copy(
-            holds = savedStateHandle["holds"] ?: "",
-            minRating = ((savedStateHandle["minRating"] ?: 1f) * 10).roundToInt() / 10f,
-            maxRating = ((savedStateHandle["maxRating"] ?: 3f) * 10).roundToInt() / 10f,
-            minGradeIndex = (savedStateHandle["minGrade"] ?: 0) + 10,
-            maxGradeIndex = (savedStateHandle["maxGrade"] ?: 0) + 10,
-            minGradeDeviation = ((savedStateHandle["minDeviation"]
-                ?: -0.5f) * 10).roundToInt() / 10f,
-            maxGradeDeviation = ((savedStateHandle["maxDeviation"]
-                ?: 0.5f) * 10).roundToInt() / 10f,
-            minAscents = numOfAscentsOptions[savedStateHandle["minAscents"] ?: 0],
-            setterName = savedStateHandle["setterName"] ?: "",
-            includeMyAscents = (savedStateHandle["myAscents"]
-                ?: FilterOptions.INCLUDE) == FilterOptions.INCLUDE || (savedStateHandle["myAscents"]
-                ?: FilterOptions.EXCLUSIVE) == FilterOptions.EXCLUSIVE,
-            onlyMyAscents = (savedStateHandle["myAscents"]
-                ?: FilterOptions.INCLUDE) == FilterOptions.EXCLUSIVE,
-            includeMyTries = (savedStateHandle["myTries"]
-                ?: FilterOptions.INCLUDE) == FilterOptions.INCLUDE || (savedStateHandle["myTries"]
-                ?: FilterOptions.EXCLUSIVE) == FilterOptions.EXCLUSIVE,
-            onlyMyTries = (savedStateHandle["myTries"]
-                ?: FilterOptions.INCLUDE) == FilterOptions.EXCLUSIVE,
+        val smoothedFilter = filter.value.copy(
+            minGradeIndex = filter.value.minGradeIndex + 10,
+            maxGradeIndex = filter.value.maxGradeIndex + 10,
+            minRating = (filter.value.minRating * 10).roundToInt() / 10f,
+            minGradeDeviation = (filter.value.minGradeDeviation * 10).roundToInt() / 10f,
+            maxGradeDeviation = (filter.value.maxGradeDeviation * 10).roundToInt() / 10f,
+            minAscents = numOfAscentsOptions[filter.value.minAscents]
         )
+        ClimbsRepository.activeFilter = smoothedFilter
     }
+
     fun updateSetterName(name: String) {
-        savedStateHandle["setterName"] = name
+        savedStateHandle["filter"] = filter.value.copy(name = name)
     }
 
     fun updateGradeRange(min: Int, max: Int) {
-        savedStateHandle["minGrade"] = min
-        savedStateHandle["maxGrade"] = max
+        savedStateHandle["filter"] = filter.value.copy(minGradeIndex = min, maxGradeIndex = max)
     }
 
     fun updateDeviationRange(min: Float, max: Float) {
-        savedStateHandle["minDeviation"] = min
-        savedStateHandle["maxDeviation"] = max
+        savedStateHandle["filter"] =
+            filter.value.copy(minGradeDeviation = min, maxGradeDeviation = max)
     }
 
     fun updateRatingRange(min: Float, max: Float) {
-        savedStateHandle["minRating"] = min
-        savedStateHandle["maxRating"] = max
+        savedStateHandle["filter"] = filter.value.copy(minRating = min, maxRating = max)
     }
 
     fun updateMinNumOfAscents(min: Int) {
-        savedStateHandle["minAscents"] = min
+        savedStateHandle["filter"] = filter.value.copy(minAscents = min)
     }
 
     fun updateMyAscents(option: FilterOptions) {
-        savedStateHandle["myAscents"] = option
+        val include = (option == FilterOptions.INCLUDE) || (option == FilterOptions.EXCLUSIVE)
+        savedStateHandle["filter"] = filter.value.copy(includeMyAscents = include)
     }
 
     fun updateMyTries(option: FilterOptions) {
-        savedStateHandle["myTries"] = option
+        val include = (option == FilterOptions.INCLUDE) || (option == FilterOptions.EXCLUSIVE)
+        savedStateHandle["filter"] = filter.value.copy(includeMyTries = include)
     }
 
     fun updateMyBoulders(option: FilterOptions) {
-        savedStateHandle["myBoulders"] = option
+
     }
 
     fun updateTheirAscents(option: FilterOptions) {
-        savedStateHandle["theirAscents"] = option
+
     }
 
     fun updateTheirTries(option: FilterOptions) {
-        savedStateHandle["theirTries"] = option
+
     }
 
     fun updateTheirBoulders(option: FilterOptions) {
-        savedStateHandle["theirBoulders"] = option
+
     }
 
     fun clearAllFilters() {
-        savedStateHandle["minGrade"] = 0
-        savedStateHandle["maxGrade"] = gradeNames.size - 1
-
-        savedStateHandle["minDeviation"] = -0.5f
-        savedStateHandle["maxDeviation"] = 0.5f
-
-        savedStateHandle["minRating"] = 0f
-        savedStateHandle["maxRating"] = 3f
-
-        savedStateHandle["minAscents"] = 0
-
-        savedStateHandle["setterName"] = ""
-
-        savedStateHandle["myAscents"] = FilterOptions.INCLUDE
-        savedStateHandle["myTries"] = FilterOptions.INCLUDE
-        savedStateHandle["myBoulders"] = FilterOptions.INCLUDE
-        savedStateHandle["theirAscents"] = FilterOptions.INCLUDE
-        savedStateHandle["theirTries"] = FilterOptions.INCLUDE
-        savedStateHandle["theirBoulders"] = FilterOptions.INCLUDE
-
+        savedStateHandle["filter"] = ClimbFilter()
         unselectAllHolds()
     }
 
@@ -168,12 +119,13 @@ class FilterViewModel(private val savedStateHandle: SavedStateHandle) : ViewMode
             }
         }
         holdsFilter += "%"
-        savedStateHandle["holds"] = holdsFilter
+        savedStateHandle["filter"] = filter.value.copy(holds = holdsFilter)
+
     }
 
     fun unselectAllHolds() {
         selectedHoldsList.clear()
-        savedStateHandle["holds"] = ""
+        savedStateHandle["filter"] = filter.value.copy(holds = "")
     }
 
     fun addOrUpdateHoldAt(tap: Offset) {

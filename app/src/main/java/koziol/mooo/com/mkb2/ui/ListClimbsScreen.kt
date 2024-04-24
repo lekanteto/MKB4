@@ -56,7 +56,7 @@ fun ListClimbsScreen(
         ) {
             val searchText by listClimbsViewModel.searchText.collectAsState()
             val isSearching by listClimbsViewModel.isSearching.collectAsState()
-            val climbs by listClimbsViewModel.climbList.collectAsState()
+            val climbs by listClimbsViewModel.climbList.collectAsState(emptyList())
             TextField(
                 value = searchText,
                 placeholder = { Text("Search") },
@@ -106,7 +106,7 @@ fun ListClimbsScreen(
                     }
                 }
             } else {
-                Text("searching...")
+                Text("Searching...")
             }
 
         }
