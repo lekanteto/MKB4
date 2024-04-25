@@ -27,6 +27,7 @@ object ClimbsRepository {
     val currentClimb = MutableStateFlow(Climb())
 
     private var climbsList = emptyList<Climb>()
+
     private val _climbs = MutableStateFlow(climbsList)
     val climbs = _climbs.asStateFlow()
 
@@ -172,19 +173,6 @@ object ClimbsRepository {
 
     fun setup(db: SQLiteDatabase) {
         this.db = db
-    }
-
-    fun moveToNextClimb(moveBackwards: Boolean = false) {
-        CoroutineScope(Dispatchers.IO).launch {
-            val climbList = climbsList
-            if (moveBackwards) {
-                val index = climbList.indexOf(currentClimb.value)
-                currentClimb.value = climbList.getOrElse(index + 1) { currentClimb.value }
-            } else {
-                val index = climbList.indexOf(currentClimb.value)
-                currentClimb.value = climbList.getOrElse(index - 1) { currentClimb.value }
-            }
-        }
     }
 }
 

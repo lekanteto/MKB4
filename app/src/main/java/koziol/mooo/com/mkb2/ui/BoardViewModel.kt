@@ -17,6 +17,18 @@ class BoardViewModel : ViewModel() {
 
 
     fun moveToNextClimb(moveBackwards: Boolean = false) {
-        ClimbsRepository.moveToNextClimb(moveBackwards)
+        CoroutineScope(Dispatchers.IO).launch {
+            val climbList = ClimbsRepository.climbs.value
+            if (moveBackwards) {
+                val index = climbList.indexOf(ClimbsRepository.currentClimb.value)
+                ClimbsRepository.currentClimb.value =
+                    climbList.getOrElse(index + 1) { ClimbsRepository.currentClimb.value }
+            } else {
+                val index = climbList.indexOf(ClimbsRepository.currentClimb.value)
+                ClimbsRepository.currentClimb.value =
+                    climbList.getOrElse(index - 1) { ClimbsRepository.currentClimb.value }
+            }
+        }
     }
+
 }
