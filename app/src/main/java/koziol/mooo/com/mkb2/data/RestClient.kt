@@ -185,7 +185,12 @@ object RestClient {
                 row.put("climbed_at", ascent.climbedAt)
                 row.put("created_at", ascent.createdAt)
 
-                db.insertWithOnConflict("ascents", null, row, CONFLICT_REPLACE)
+                if(ascent.isListed) {
+                    db.insertWithOnConflict("ascents", null, row, CONFLICT_REPLACE)
+                } else {
+                    db.delete("ascents", "uuid = ?", arrayOf(ascent.uuid))
+                }
+
             }
 
             val syncDateRow = ContentValues(3)
@@ -214,7 +219,11 @@ object RestClient {
                 row.put("climbed_at", bid.climbedAt)
                 row.put("created_at", bid.createdAt)
 
-                db.insertWithOnConflict("bids", null, row, CONFLICT_REPLACE)
+                if (bid.isListed) {
+                    db.insertWithOnConflict("bids", null, row, CONFLICT_REPLACE)
+                } else {
+                    db.delete("bids", "uuid = ?", arrayOf(bid.uuid))
+                }
             }
 
             val syncDateRow = ContentValues(3)

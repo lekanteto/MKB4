@@ -1,14 +1,12 @@
 package koziol.mooo.com.mkb2.data
 
 import android.database.sqlite.SQLiteDatabase
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 object ClimbsRepository {
@@ -20,16 +18,19 @@ object ClimbsRepository {
         get() = filterFlow.value
         set(value) {
             filterFlow.value = value
+            CoroutineScope(Dispatchers.IO).launch {
+                climbsList = getFilteredClimbs(value)
+                _climbs.value = climbsList
+            }
         }
 
     val currentClimb = MutableStateFlow(Climb())
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    val climbs = filterFlow.flatMapLatest { filter -> flow {
-        emit(getFilteredClimbs(filter))
-    }
+    private var climbsList = emptyList<Climb>()
+    private val _climbs = MutableStateFlow(climbsList)
+    val climbs = _climbs.asStateFlow()
 
-    }
+
 
     private val _isQuerying = MutableStateFlow(false)
     val isQuerying = _isQuerying.asStateFlow()
@@ -171,6 +172,19 @@ object ClimbsRepository {
 
     fun setup(db: SQLiteDatabase) {
         this.db = db
+    }
+
+    fun moveToNextClimb(moveBackwards: Boolean = false) {
+        CoroutineScope(Dispatchers.IO).launch {
+            val climbList = climbsList
+            if (moveBackwards) {
+                val index = climbList.indexOf(currentClimb.value)
+                currentClimb.value = climbList.getOrElse(index + 1) { currentClimb.value }
+            } else {
+                val index = climbList.indexOf(currentClimb.value)
+                currentClimb.value = climbList.getOrElse(index - 1) { currentClimb.value }
+            }
+        }
     }
 }
 

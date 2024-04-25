@@ -54,8 +54,8 @@ fun FilterClimbsScreen(
             val filter by filterViewModel.filter.collectAsStateWithLifecycle()
 
             GradeRangeSelector(
-                selectedMin = filter.minGradeIndex,
-                selectedMax = filter.maxGradeIndex,
+                selectedMin = filter.minGradeIndex - 10,
+                selectedMax = filter.maxGradeIndex - 10,
                 selectedMinDev = filter.minGradeDeviation,
                 selectedMaxDev = filter.maxGradeDeviation,
                 grades = filterViewModel.gradeNames,

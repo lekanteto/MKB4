@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.last
@@ -16,16 +17,6 @@ class BoardViewModel : ViewModel() {
 
 
     fun moveToNextClimb(moveBackwards: Boolean = false) {
-        CoroutineScope(Dispatchers.Default).launch {
-            val climbs = ClimbsRepository.climbs.last()
-            if (moveBackwards) {
-                val index = climbs.indexOf(currentClimb.value)
-                currentClimb.value = climbs.getOrElse(index+1) { currentClimb.value }
-            } else {
-                val index = climbs.indexOf(currentClimb.value)
-                currentClimb.value = climbs.getOrElse(index-1) { currentClimb.value }
-            }
-
-        }
+        ClimbsRepository.moveToNextClimb(moveBackwards)
     }
 }

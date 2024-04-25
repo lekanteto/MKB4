@@ -35,12 +35,13 @@ class FilterViewModel(private val savedStateHandle: SavedStateHandle) : ViewMode
         "7c+/V10"
     )
 
-    val filter: StateFlow<ClimbFilter> = savedStateHandle.getStateFlow("filter", ClimbFilter(minGradeIndex = 0, maxGradeIndex = 17))
+    val filter: StateFlow<ClimbFilter> =
+        savedStateHandle.getStateFlow("filter", ClimbsRepository.activeFilter.copy())
 
     private fun updateFilterInRepository() {
         val smoothedFilter = filter.value.copy(
-            minGradeIndex = filter.value.minGradeIndex + 10,
-            maxGradeIndex = filter.value.maxGradeIndex + 10,
+            minGradeIndex = filter.value.minGradeIndex,
+            maxGradeIndex = filter.value.maxGradeIndex,
             minRating = (filter.value.minRating * 10).roundToInt() / 10f,
             minGradeDeviation = (filter.value.minGradeDeviation * 10).roundToInt() / 10f,
             maxGradeDeviation = (filter.value.maxGradeDeviation * 10).roundToInt() / 10f,
@@ -54,7 +55,7 @@ class FilterViewModel(private val savedStateHandle: SavedStateHandle) : ViewMode
     }
 
     fun updateGradeRange(min: Int, max: Int) {
-        savedStateHandle["filter"] = filter.value.copy(minGradeIndex = min, maxGradeIndex = max)
+        savedStateHandle["filter"] = filter.value.copy(minGradeIndex = min + 10, maxGradeIndex = max + 10)
     }
 
     fun updateDeviationRange(min: Float, max: Float) {
@@ -72,12 +73,16 @@ class FilterViewModel(private val savedStateHandle: SavedStateHandle) : ViewMode
 
     fun updateMyAscents(option: FilterOptions) {
         val include = (option == FilterOptions.INCLUDE) || (option == FilterOptions.EXCLUSIVE)
-        savedStateHandle["filter"] = filter.value.copy(includeMyAscents = include)
+        val exclusive = (option == FilterOptions.EXCLUSIVE)
+        savedStateHandle["filter"] =
+            filter.value.copy(includeMyAscents = include, onlyMyAscents = exclusive)
     }
 
     fun updateMyTries(option: FilterOptions) {
         val include = (option == FilterOptions.INCLUDE) || (option == FilterOptions.EXCLUSIVE)
-        savedStateHandle["filter"] = filter.value.copy(includeMyTries = include)
+        val exclusive = (option == FilterOptions.EXCLUSIVE)
+        savedStateHandle["filter"] =
+            filter.value.copy(includeMyTries = include, onlyMyTries = exclusive)
     }
 
     fun updateMyBoulders(option: FilterOptions) {
