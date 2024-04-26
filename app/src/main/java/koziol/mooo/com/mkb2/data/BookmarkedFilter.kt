@@ -1,12 +1,17 @@
 package koziol.mooo.com.mkb2.data
 
 import androidx.room.ColumnInfo
+import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity
+@Entity(tableName = "filters")
 data class BookmarkedFilter(
-    @PrimaryKey val id: Int,
-    @ColumnInfo(name = "name") val name: String,
-    @ColumnInfo(name = "max_grade_index") val maxGradeIndex: Int
+    @PrimaryKey(autoGenerate = true) val id: Int,
+    @ColumnInfo(name = "bookmark_name") val name: String,
+
+
+    @Embedded
+    val climbFilter: ClimbFilter,
+
 )

@@ -1,0 +1,124 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "fea622ce716c1b3ce0ba00e0bd050df0",
+    "entities": [
+      {
+        "tableName": "filters",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `bookmark_name` TEXT NOT NULL, `name` TEXT NOT NULL, `holds` TEXT NOT NULL, `minRating` REAL NOT NULL, `maxRating` REAL NOT NULL, `minGradeIndex` INTEGER NOT NULL, `maxGradeIndex` INTEGER NOT NULL, `minGradeDeviation` REAL NOT NULL, `maxGradeDeviation` REAL NOT NULL, `minAscents` INTEGER NOT NULL, `setterName` TEXT NOT NULL, `includeMyAscents` INTEGER NOT NULL, `onlyMyAscents` INTEGER NOT NULL, `includeMyTries` INTEGER NOT NULL, `onlyMyTries` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "bookmark_name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "climbFilter.name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "climbFilter.holds",
+            "columnName": "holds",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "climbFilter.minRating",
+            "columnName": "minRating",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "climbFilter.maxRating",
+            "columnName": "maxRating",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "climbFilter.minGradeIndex",
+            "columnName": "minGradeIndex",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "climbFilter.maxGradeIndex",
+            "columnName": "maxGradeIndex",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "climbFilter.minGradeDeviation",
+            "columnName": "minGradeDeviation",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "climbFilter.maxGradeDeviation",
+            "columnName": "maxGradeDeviation",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "climbFilter.minAscents",
+            "columnName": "minAscents",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "climbFilter.setterName",
+            "columnName": "setterName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "climbFilter.includeMyAscents",
+            "columnName": "includeMyAscents",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "climbFilter.onlyMyAscents",
+            "columnName": "onlyMyAscents",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "climbFilter.includeMyTries",
+            "columnName": "includeMyTries",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "climbFilter.onlyMyTries",
+            "columnName": "onlyMyTries",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'fea622ce716c1b3ce0ba00e0bd050df0')"
+    ]
+  }
+}

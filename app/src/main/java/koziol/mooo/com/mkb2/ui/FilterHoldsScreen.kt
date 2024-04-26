@@ -99,9 +99,9 @@ fun FilterHoldsScreen(
                         drawContent()
                         for (hold in filterViewModel.selectedHoldsList) {
                             drawCircle(
-                                color = Color(hold.role.screenColor), 25F, center = Offset(
+                                color = Color(hold.role.screenColor), size.width * 0.024f, center = Offset(
                                     hold.xFraction * size.width, hold.yFraction * size.height
-                                ), 1F, style = Stroke(10F)
+                                ), 1F, style = Stroke(size.width * 0.012f)
                             )
                         }
                     })

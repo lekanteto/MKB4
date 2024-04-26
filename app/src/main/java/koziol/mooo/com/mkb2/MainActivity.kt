@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.room.Room
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -12,9 +13,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import koziol.mooo.com.mkb2.data.BookmarkedFilter
 import koziol.mooo.com.mkb2.data.ClimbsRepository
 import koziol.mooo.com.mkb2.data.ConfigRepository
+import koziol.mooo.com.mkb2.data.FilterDao
 import koziol.mooo.com.mkb2.data.HoldsRepository
+import koziol.mooo.com.mkb2.data.MkbDatabase
 import koziol.mooo.com.mkb2.data.OriginalDbOpenHelper
 import koziol.mooo.com.mkb2.data.RestClient
 import koziol.mooo.com.mkb2.data.SetterRepository
@@ -25,6 +29,8 @@ import koziol.mooo.com.mkb2.ui.theme.MKB2Theme
 class MainActivity : ComponentActivity() {
 
     private lateinit var db: SQLiteDatabase
+    private lateinit var mkbDb: MkbDatabase
+    private lateinit var bookmarkDao: FilterDao
     private val _isInitializing = MutableStateFlow(false)
     val isInitializing = _isInitializing.asStateFlow()
 
@@ -43,12 +49,12 @@ class MainActivity : ComponentActivity() {
             HoldsRepository.setup(db)
             ClimbsRepository.setup(db)
             SetterRepository.setup(db)
-            async { RestClient.setup(db) }.await()
-            //RestClient.downloadSharedData()
-            //RestClient.downloadUserData()
+            RestClient.setup(db)
 
-            //val mkbDb = Room.databaseBuilder(applicationContext, MkbDatabase::class.java, "mkb.db").build()
-            //val bookmarkDao = mkbDb.filterDao()
+            mkbDb = Room.databaseBuilder(applicationContext, MkbDatabase::class.java, "mkb.db").build()
+            bookmarkDao = mkbDb.filterDao()
+            val bookmark = bookmarkDao.getLastActive()
+            ClimbsRepository.activeFilter = bookmark.climbFilter
             _isInitializing.update { false }
             Log.d("MKB", "end init")
         }
@@ -65,10 +71,15 @@ class MainActivity : ComponentActivity() {
         return OriginalDbOpenHelper(this).writableDatabase
     }
 
-    override fun onDestroy() {
-        RestClient.close()
-        db.close()
-        super.onDestroy()
+    override fun onStop() {
+        CoroutineScope(Dispatchers.IO).launch {
+            val bookmark = BookmarkedFilter(1, "active", ClimbsRepository.activeFilter)
+            bookmarkDao.insert(bookmark)
+            RestClient.close()
+            db.close()
+            mkbDb.close()
+        }
+        super.onStop()
     }
 
 }

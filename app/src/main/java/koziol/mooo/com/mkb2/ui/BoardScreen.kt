@@ -93,9 +93,9 @@ fun BoardScreen(
                         drawContent()
                         for (hold in climb.getHoldsList()) {
                             drawCircle(
-                                color = Color(hold.role.screenColor), 28F, center = Offset(
+                                color = Color(hold.role.screenColor), size.width * 0.022f, center = Offset(
                                     hold.xFraction * size.width, hold.yFraction * size.height
-                                ), 1F, style = Stroke(7F)
+                                ), 1F, style = Stroke(size.width * 0.01f)
                             )
                         }
                     }
