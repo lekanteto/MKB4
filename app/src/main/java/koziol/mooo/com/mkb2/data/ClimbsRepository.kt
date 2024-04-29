@@ -32,7 +32,6 @@ object ClimbsRepository {
     val climbs = _climbs.asStateFlow()
 
 
-
     private val _isQuerying = MutableStateFlow(false)
     val isQuerying = _isQuerying.asStateFlow()
 
@@ -125,33 +124,35 @@ object ClimbsRepository {
                 """.trimIndent(), convertToSqlArgs(filter)
                 )
 
+                val uuidIndex = climbsCursor.getColumnIndexOrThrow("climbUuid")
+                val nameIndex = climbsCursor.getColumnIndexOrThrow("climbName")
+                val setterIndex = climbsCursor.getColumnIndexOrThrow("setterName")
+                val holdsIndex = climbsCursor.getColumnIndexOrThrow("holdsString")
+                val ascentsIndex = climbsCursor.getColumnIndexOrThrow("ascents")
+                val gradeIndex = climbsCursor.getColumnIndexOrThrow("gradeName")
+                val deviationIndex = climbsCursor.getColumnIndexOrThrow("gradeDeviation")
+                val ratingIndex = climbsCursor.getColumnIndexOrThrow("rating")
+
+                var uuid: String
+                var name: String
+                var setter: String
+                var holdsString: String
+                var ascents: Int
+                var grade: String
+                var gradeDeviation: Float
+                var rating: Float
+                var currentClimb: Climb
 
                 while (climbsCursor.moveToNext()) {
-                    var columnIndex = climbsCursor.getColumnIndexOrThrow("climbUuid")
-                    val uuid = climbsCursor.getString(columnIndex)
-
-                    columnIndex = climbsCursor.getColumnIndexOrThrow("climbName")
-                    val name = climbsCursor.getString(columnIndex)
-
-                    columnIndex = climbsCursor.getColumnIndexOrThrow("setterName")
-                    val setter = climbsCursor.getString(columnIndex)
-
-                    columnIndex = climbsCursor.getColumnIndexOrThrow("holdsString")
-                    val holdsString = climbsCursor.getString(columnIndex)
-
-                    columnIndex = climbsCursor.getColumnIndexOrThrow("ascents")
-                    val ascents = climbsCursor.getInt(columnIndex)
-
-                    columnIndex = climbsCursor.getColumnIndexOrThrow("gradeName")
-                    val grade = climbsCursor.getString(columnIndex)
-
-                    columnIndex = climbsCursor.getColumnIndexOrThrow("gradeDeviation")
-                    val gradeDeviation = climbsCursor.getFloat(columnIndex)
-
-                    columnIndex = climbsCursor.getColumnIndexOrThrow("rating")
-                    val rating = climbsCursor.getFloat(columnIndex)
-
-                    val currentClimb = Climb(
+                    uuid = climbsCursor.getString(uuidIndex)
+                    name = climbsCursor.getString(nameIndex)
+                    setter = climbsCursor.getString(setterIndex)
+                    holdsString = climbsCursor.getString(holdsIndex)
+                    ascents = climbsCursor.getInt(ascentsIndex)
+                    grade = climbsCursor.getString(gradeIndex)
+                    gradeDeviation = climbsCursor.getFloat(deviationIndex)
+                    rating = climbsCursor.getFloat(ratingIndex)
+                    currentClimb = Climb(
                         uuid = uuid,
                         name = name,
                         setter = setter,
@@ -169,6 +170,46 @@ object ClimbsRepository {
             _isQuerying.update { false }
             return@withContext climbsList
         }
+    }
+
+    fun getAscentsFor(climb: Climb): List<Ascent> {
+        val ascentsCursor = db.query(
+            "ascents", arrayOf(
+                "climb_uuid", "angle", "bid_count", "quality", "difficulty", "comment", "climbed_at"
+            ), "climb_uuid = ?", arrayOf(climb.uuid), null, null, "climbed_at"
+        )
+        val ascentsList = mutableListOf<Ascent>()
+        var currentAscent: Ascent
+        while ((ascentsCursor.moveToNext())) {
+            currentAscent = Ascent(
+                climbedAt = ascentsCursor.getString(6)
+            )
+            ascentsList.add(currentAscent)
+        }
+        ascentsCursor.close()
+        return ascentsList
+    }
+
+    fun getBidsFor(climb: Climb): List<Bid> {
+        val ascentsCursor = db.query(
+            "bids",
+            arrayOf("climb_uuid", "angle", "bid_count", "comment", "climbed_at"),
+            "climb_uuid = ?",
+            arrayOf(climb.uuid),
+            null,
+            null,
+            "climbed_at"
+        )
+        val bidsList = mutableListOf<Bid>()
+        var currentBid: Bid
+        while ((ascentsCursor.moveToNext())) {
+            currentBid = Bid(
+                climbedAt = ascentsCursor.getString(4)
+            )
+            bidsList.add(currentBid)
+        }
+        ascentsCursor.close()
+        return bidsList
     }
 
     fun setup(db: SQLiteDatabase) {

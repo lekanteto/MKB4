@@ -7,6 +7,7 @@ import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Search
@@ -38,6 +39,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.IntSize
 import androidx.lifecycle.viewmodel.compose.viewModel
 import koziol.mooo.com.mkb2.R
+import koziol.mooo.com.mkb2.data.ClimbsRepository
 import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
 
@@ -59,6 +61,25 @@ fun BoardScreen(
             Text(
                 text = climb.name + " " + climb.grade + " " + (climb.rating * 100).roundToInt() / 100f
             )
+            Row {
+                val ascents = ClimbsRepository.getAscentsFor(climb)
+                if (ascents.isNotEmpty()) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.mountain_flag_24px),
+                        contentDescription = null
+                    )
+                    Text(text = ascents.last().climbedAt)
+                }
+                val bids = ClimbsRepository.getBidsFor(climb)
+                if (bids.isNotEmpty()) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.mountain_flag_fill0_wght400_grad0_opsz24),
+                        contentDescription = null
+                    )
+                    Text(text = bids.last().climbedAt)
+                }
+
+            }
             // set up all transformation states
             var zoomFactor by remember { mutableFloatStateOf(1f) }
             var panOffset by remember { mutableStateOf(Offset.Zero) }
@@ -93,9 +114,13 @@ fun BoardScreen(
                         drawContent()
                         for (hold in climb.getHoldsList()) {
                             drawCircle(
-                                color = Color(hold.role.screenColor), size.width * 0.022f, center = Offset(
+                                color = Color(hold.role.screenColor),
+                                size.width * 0.022f,
+                                center = Offset(
                                     hold.xFraction * size.width, hold.yFraction * size.height
-                                ), 1F, style = Stroke(size.width * 0.01f)
+                                ),
+                                1F,
+                                style = Stroke(size.width * 0.01f)
                             )
                         }
                     }
