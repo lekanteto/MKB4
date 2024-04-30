@@ -35,27 +35,39 @@ class FilterViewModel(private val savedStateHandle: SavedStateHandle) : ViewMode
         "7c+/V10"
     )
 
-    val filter: StateFlow<ClimbFilter> =
-        savedStateHandle.getStateFlow("filter", ClimbsRepository.activeFilter.copy())
+    val filter: StateFlow<ClimbFilter> = savedStateHandle.getStateFlow(
+        "filter", ClimbsRepository.activeFilter.copy(
+            minGradeIndex = ClimbsRepository.activeFilter.minGradeIndex - 10,
+            maxGradeIndex = ClimbsRepository.activeFilter.maxGradeIndex - 10,
+            minAscents = numOfAscentsOptions.indexOf(ClimbsRepository.activeFilter.minAscents)
+                .coerceIn(0, numOfAscentsOptions.lastIndex)
+        )
+    )
 
-    private fun updateFilterInRepository() {
-        val smoothedFilter = filter.value.copy(
-            minGradeIndex = filter.value.minGradeIndex,
-            maxGradeIndex = filter.value.maxGradeIndex,
+    fun applyFilter() {
+        ClimbsRepository.activeFilter = ClimbsRepository.activeFilter.copy(
+            holds = filter.value.holds,
             minRating = (filter.value.minRating * 10).roundToInt() / 10f,
+            maxRating = (filter.value.maxRating * 10).roundToInt() / 10f,
+            minGradeIndex = filter.value.minGradeIndex + 10,
+            maxGradeIndex = filter.value.maxGradeIndex + 10,
             minGradeDeviation = (filter.value.minGradeDeviation * 10).roundToInt() / 10f,
             maxGradeDeviation = (filter.value.maxGradeDeviation * 10).roundToInt() / 10f,
-            minAscents = numOfAscentsOptions[filter.value.minAscents]
+            minAscents = numOfAscentsOptions[filter.value.minAscents],
+            setterName = filter.value.setterName,
+            includeMyAscents = filter.value.includeMyAscents,
+            onlyMyAscents = filter.value.onlyMyAscents,
+            includeMyTries = filter.value.includeMyTries,
+            onlyMyTries = filter.value.onlyMyTries,
         )
-        ClimbsRepository.activeFilter = smoothedFilter
     }
 
     fun updateSetterName(name: String) {
-        savedStateHandle["filter"] = filter.value.copy(name = name)
+        savedStateHandle["filter"] = filter.value.copy(setterName = name)
     }
 
     fun updateGradeRange(min: Int, max: Int) {
-        savedStateHandle["filter"] = filter.value.copy(minGradeIndex = min + 10, maxGradeIndex = max + 10)
+        savedStateHandle["filter"] = filter.value.copy(minGradeIndex = min, maxGradeIndex = max)
     }
 
     fun updateDeviationRange(min: Float, max: Float) {
@@ -74,8 +86,9 @@ class FilterViewModel(private val savedStateHandle: SavedStateHandle) : ViewMode
     fun updateMyAscents(option: FilterOptions) {
         val include = (option == FilterOptions.INCLUDE) || (option == FilterOptions.EXCLUSIVE)
         val exclusive = (option == FilterOptions.EXCLUSIVE)
-        savedStateHandle["filter"] =
-            filter.value.copy(includeMyAscents = include, onlyMyAscents = exclusive)
+        savedStateHandle["filter"] = filter.value.copy(
+            includeMyAscents = include, onlyMyAscents = exclusive
+        )
     }
 
     fun updateMyTries(option: FilterOptions) {
@@ -102,28 +115,27 @@ class FilterViewModel(private val savedStateHandle: SavedStateHandle) : ViewMode
     }
 
     fun clearAllFilters() {
-        savedStateHandle["filter"] = ClimbFilter()
+        savedStateHandle["filter"] = ClimbFilter(
+            name = ClimbsRepository.activeFilter.name,
+            minGradeIndex = 0,
+            maxGradeIndex = gradeNames.lastIndex
+        )
         unselectAllHolds()
     }
 
-    fun applyAllFilters() {
-        updateFilterInRepository()
-    }
 
-    val selectedHolds = savedStateHandle.getStateFlow("holds", "")
+    val selectedHoldsList =
+        mutableStateListOf(*(HoldsRepository.getHoldsListForHoldsString(filter.value.holds).toTypedArray()))
 
-    val selectedHoldsList = mutableStateListOf<KBHold>()
-
-    fun applyHoldsFilter(respectHoldRoles: Boolean = true) {
+    fun updateHolds(respectHoldRoles: Boolean = true) {
 
         var holdsFilter = ""
         selectedHoldsList.sortedBy { it.id }.forEach { hold ->
-            holdsFilter += "%p" + hold.id + "r"
+            holdsFilter += "p" + hold.id + "r"
             if (respectHoldRoles) {
                 holdsFilter += hold.role.id
             }
         }
-        holdsFilter += "%"
         savedStateHandle["filter"] = filter.value.copy(holds = holdsFilter)
 
     }

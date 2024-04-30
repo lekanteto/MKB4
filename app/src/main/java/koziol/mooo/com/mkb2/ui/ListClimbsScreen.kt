@@ -40,7 +40,7 @@ import koziol.mooo.com.mkb2.data.ClimbsRepository
 @Composable
 fun ListClimbsScreen(
     destinations: Map<String, () -> Unit>, listClimbsViewModel: ListClimbsViewModel = viewModel(
-        LocalContext.current as ComponentActivity
+        //LocalContext.current as ComponentActivity
     )
 ) {
     val isDownloading by listClimbsViewModel.isDownloading.collectAsState()

@@ -1,5 +1,6 @@
 package koziol.mooo.com.mkb2.ui
 
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -32,17 +33,19 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import koziol.mooo.com.mkb2.R
 import kotlin.math.roundToInt
 
 @Composable
-fun FilterClimbsScreen(
+fun FilterClimbsScreen(navController: NavHostController,
     destinations: Map<String, () -> Unit>,
     filterViewModel: FilterViewModel = viewModel(LocalContext.current as ComponentActivity)
 ) {
     Scaffold(topBar = {
         FilterClimbsTopBar(
-            destinations, filterViewModel::applyAllFilters, filterViewModel::clearAllFilters
+            navController,
+            filterViewModel::applyFilter, filterViewModel::clearAllFilters
         )
     }, content = { innerPadding ->
         Column(
@@ -54,8 +57,8 @@ fun FilterClimbsScreen(
             val filter by filterViewModel.filter.collectAsStateWithLifecycle()
 
             GradeRangeSelector(
-                selectedMin = filter.minGradeIndex - 10,
-                selectedMax = filter.maxGradeIndex - 10,
+                selectedMin = filter.minGradeIndex,
+                selectedMax = filter.maxGradeIndex,
                 selectedMinDev = filter.minGradeDeviation,
                 selectedMaxDev = filter.maxGradeDeviation,
                 grades = filterViewModel.gradeNames,
@@ -77,14 +80,14 @@ fun FilterClimbsScreen(
 
             val myAscents: FilterOptions = if (filter.onlyMyAscents) {
                 FilterOptions.EXCLUSIVE
-            } else if (filter.includeMyAscents){
+            } else if (filter.includeMyAscents) {
                 FilterOptions.INCLUDE
             } else {
                 FilterOptions.EXCLUDE
             }
             val myTries: FilterOptions = if (filter.onlyMyTries) {
                 FilterOptions.EXCLUSIVE
-            } else if (filter.includeMyTries){
+            } else if (filter.includeMyTries) {
                 FilterOptions.INCLUDE
             } else {
                 FilterOptions.EXCLUDE
@@ -108,11 +111,9 @@ fun FilterClimbsScreen(
             )
             Row {
                 HoldsFilter(
-                    destinations["holdsFilter"],
-                    isSelected = filterViewModel.selectedHoldsList.isNotEmpty()
+                    destinations["holdsFilter"], isSelected = filter.holds.isNotEmpty()
                 )
-                val setterLabel =
-                    filter.setterName.ifEmpty { "Setter" }
+                val setterLabel = filter.setterName.ifEmpty { "Setter" }
                 SetterFilter(
                     setterLabel,
                     onSelectSetter = filterViewModel::updateSetterName,
@@ -129,7 +130,8 @@ fun FilterClimbsScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FilterClimbsTopBar(
-    destinations: Map<String, () -> Unit>, onApplyFilter: () -> Unit, onClearFilter: () -> Unit
+    navController: NavHostController,
+    onApplyFilter: () -> Unit, onClearFilter: () -> Unit
 ) {
     TopAppBar(colors = TopAppBarDefaults.topAppBarColors(
         containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -139,7 +141,7 @@ fun FilterClimbsTopBar(
     }, navigationIcon = {
         OutlinedIconButton(onClick = {
             onApplyFilter()
-            destinations["climbs"]?.invoke()
+            navController.popBackStack()
         }, content = {
             Icon(
                 painter = painterResource(id = R.drawable.outline_filter_alt_24),

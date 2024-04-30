@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import koziol.mooo.com.mkb2.data.BookmarkedFilter
+import koziol.mooo.com.mkb2.data.ClimbFilter
 import koziol.mooo.com.mkb2.data.ClimbsRepository
 import koziol.mooo.com.mkb2.data.ConfigRepository
 import koziol.mooo.com.mkb2.data.FilterDao
@@ -54,7 +55,7 @@ class MainActivity : ComponentActivity() {
             mkbDb = Room.databaseBuilder(applicationContext, MkbDatabase::class.java, "mkb.db").build()
             bookmarkDao = mkbDb.filterDao()
             val bookmark = bookmarkDao.getLastActive()
-            ClimbsRepository.activeFilter = bookmark.climbFilter
+            ClimbsRepository.activeFilter = bookmark?.climbFilter ?: ClimbFilter()
             _isInitializing.update { false }
             Log.d("MKB", "end init")
         }
@@ -76,8 +77,8 @@ class MainActivity : ComponentActivity() {
             val bookmark = BookmarkedFilter(1, "active", ClimbsRepository.activeFilter)
             bookmarkDao.insert(bookmark)
             RestClient.close()
-            db.close()
-            mkbDb.close()
+            //db.close()
+            //mkbDb.close()
         }
         super.onStop()
     }

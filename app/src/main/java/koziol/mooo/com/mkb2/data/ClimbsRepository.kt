@@ -44,16 +44,18 @@ object ClimbsRepository {
         val includeNotTriedByMe = if (filter.onlyMyTries) "0" else "1"
         val includeMyTries = if (filter.includeMyTries) "1" else "0"
 
+        val holdsFilter = filter.holds.replace("p", "%p") + "%"
+
         return arrayOf(
             filter.name,
-            filter.holds,
+            holdsFilter,
             ignoreHolds,
             filter.minRating.toString(),
             filter.maxRating.toString(),
-            filter.minGradeIndex.toString(),
-            filter.maxGradeIndex.toString(),
-            filter.minGradeDeviation.toString(),
-            filter.maxGradeDeviation.toString(),
+            (filter.minGradeIndex - 0.5f).toString(),
+            (filter.maxGradeIndex + 0.49f).toString(),
+            (filter.minGradeDeviation - 0.05f).toString(),
+            (filter.maxGradeDeviation + 0.05f).toString(),
             filter.minAscents.toString(),
             filter.setterName,
             ignoreSetter,

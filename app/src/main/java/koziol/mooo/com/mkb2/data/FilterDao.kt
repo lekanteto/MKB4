@@ -12,7 +12,7 @@ interface FilterDao {
     fun getAll(): List<BookmarkedFilter>
 
     @Query("select * from filters where id = 1")
-    fun getLastActive(): BookmarkedFilter
+    fun getLastActive(): BookmarkedFilter? // will return null even when return type is changed to not nullable!
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(filter: BookmarkedFilter)

@@ -12,11 +12,12 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 import koziol.mooo.com.mkb2.data.ClimbFilter
 import koziol.mooo.com.mkb2.data.ClimbsRepository
+import koziol.mooo.com.mkb2.data.ConfigRepository
 import koziol.mooo.com.mkb2.data.RestClient
 
 class ListClimbsViewModel : ViewModel() {
 
-    private val _searchText = MutableStateFlow("")
+    private val _searchText = MutableStateFlow(ClimbsRepository.activeFilter.name)
     val searchText = _searchText.asStateFlow()
 
     var climbList = ClimbsRepository.climbs
@@ -43,7 +44,8 @@ class ListClimbsViewModel : ViewModel() {
         CoroutineScope(Dispatchers.Main).launch {
             _isDownloading.value = true
             RestClient.downloadSharedData()
-            RestClient.downloadUserData(415940)
+            val userId = ConfigRepository.getCurrentUserId() ?: 0
+            RestClient.downloadUserData(userId)
             _isDownloading.value = false
         }
     }

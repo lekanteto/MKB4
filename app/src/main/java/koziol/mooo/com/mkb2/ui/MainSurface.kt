@@ -18,6 +18,8 @@ fun MainSurface() {
         val navController = rememberNavController()
 
 
+
+
         NavHost(navController = navController, startDestination = "climbs") {
 
             val destinations = mapOf(
@@ -31,8 +33,12 @@ fun MainSurface() {
 
             composable("climbs") { ListClimbsScreen(destinations = destinations) }
             composable("displayBoard") { BoardScreen(destinations = destinations) }
-            composable("climbsFilter") { FilterClimbsScreen(destinations = destinations) }
-            composable("holdsFilter") { FilterHoldsScreen(destinations = destinations) }
+            composable("climbsFilter") {
+                FilterClimbsScreen(
+                    navController = navController, destinations = destinations
+                )
+            }
+            composable("holdsFilter") { FilterHoldsScreen(navController = navController) }
         }
     }
 }

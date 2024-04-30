@@ -22,7 +22,7 @@ class SetterListViewModel : ViewModel() {
 
     private val _setters = MutableStateFlow(listOf<String>())
     @OptIn(FlowPreview::class)
-    val setters = searchText.debounce(900).combine(_setters) { searchText, _ ->
+    val setters = searchText.debounce(700).combine(_setters) { searchText, _ ->
         SetterRepository.getSetters(searchText)
     }
 

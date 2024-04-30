@@ -165,7 +165,9 @@ object RestClient {
         }
     }
 
-    private suspend fun updateAscents(newAscents: List<SyncResponse.PUT.Ascent>, date: String, userId: Int) {
+    private suspend fun updateAscents(
+        newAscents: List<SyncResponse.PUT.Ascent>, date: String, userId: Int
+    ) {
         Log.d("Mkb4", "in updateAscents")
         withContext(Dispatchers.IO) {
             newAscents.forEach { ascent ->
@@ -185,7 +187,7 @@ object RestClient {
                 row.put("climbed_at", ascent.climbedAt)
                 row.put("created_at", ascent.createdAt)
 
-                if(ascent.isListed) {
+                if (ascent.isListed) {
                     db.insertWithOnConflict("ascents", null, row, CONFLICT_REPLACE)
                 } else {
                     db.delete("ascents", "uuid = ?", arrayOf(ascent.uuid))
@@ -238,30 +240,31 @@ object RestClient {
     }
 
 
-    private suspend fun createUserSyncRequestContent(id: Int): String = withContext(Dispatchers.IO) {
+    private suspend fun createUserSyncRequestContent(id: Int): String =
+        withContext(Dispatchers.IO) {
 
-        val syncsCursor = db.query(
-            "user_syncs", null, "user_id = ?", arrayOf("415940"), null, null, null
-        )
-
-        val userSyncs = ArrayList<UserSyncRequest.GET.Query.Syncs.UserSync>(8)
-        while (syncsCursor.moveToNext()) {
-            val entry = UserSyncRequest.GET.Query.Syncs.UserSync(
-                userId = id,
-                lastSynchronizedAt = syncsCursor.getString(2),
-                tableName = syncsCursor.getString(1)
+            val syncsCursor = db.query(
+                "user_syncs", null, "user_id = ?", arrayOf(id.toString()), null, null, null
             )
-            userSyncs.add(entry)
-        }
-        syncsCursor.close()
 
-        val syncs = UserSyncRequest.GET.Query.Syncs(userSyncs)
-        val query = UserSyncRequest.GET.Query(syncs = syncs)
-        val get = UserSyncRequest.GET(query = query)
-        val userSyncRequest = UserSyncRequest(gET = get)
-        val json = Json { encodeDefaults = true }
-        return@withContext json.encodeToString<UserSyncRequest>(userSyncRequest)
-    }
+            val userSyncs = ArrayList<UserSyncRequest.GET.Query.Syncs.UserSync>(8)
+            while (syncsCursor.moveToNext()) {
+                val entry = UserSyncRequest.GET.Query.Syncs.UserSync(
+                    userId = id,
+                    lastSynchronizedAt = syncsCursor.getString(2),
+                    tableName = syncsCursor.getString(1)
+                )
+                userSyncs.add(entry)
+            }
+            syncsCursor.close()
+
+            val syncs = UserSyncRequest.GET.Query.Syncs(userSyncs)
+            val query = UserSyncRequest.GET.Query(syncs = syncs)
+            val get = UserSyncRequest.GET(query = query)
+            val userSyncRequest = UserSyncRequest(gET = get)
+            val json = Json { encodeDefaults = true }
+            return@withContext json.encodeToString<UserSyncRequest>(userSyncRequest)
+        }
 
     private suspend fun createSharedSyncRequestContent(): String = withContext(Dispatchers.IO) {
 
@@ -312,8 +315,28 @@ object RestClient {
     }
 
     suspend fun login(username: String, password: String) {
+        if (this::client.isInitialized) {
+            withContext(Dispatchers.IO) {
+                val json = Json { encodeDefaults = true }
+                val loginBody = json.encodeToString<LoginRequest>(
+                    LoginRequest(
+                        password = password, username = username
+                    )
+                )
+                val loginResponse: LoginResponse =
+                    client.post("https://kilterboardapp.com/sessions") {
+                        contentType(ContentType.Application.Json)
+                        setBody(loginBody)
+                    }.body()
+                ConfigRepository.saveSession(
+                    username, loginResponse.session.userId, loginResponse.session.token
+                )
+            }
+        } else {
+            Log.d("MKB4", "not inited for login")
+        }
         withContext(Dispatchers.IO) {
-            ConfigRepository.saveSession("lekanteto", 415940, "651d46009d9a0d59fe6123f53805da0f7acf11d1")
+
         }
 
     }

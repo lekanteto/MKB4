@@ -73,7 +73,7 @@ fun BoardScreen(
                 val bids = ClimbsRepository.getBidsFor(climb)
                 if (bids.isNotEmpty()) {
                     Icon(
-                        painter = painterResource(id = R.drawable.mountain_flag_fill0_wght400_grad0_opsz24),
+                        painter = painterResource(id = R.drawable.mountain_flag_half),
                         contentDescription = null
                     )
                     Text(text = bids.last().climbedAt)
@@ -114,13 +114,9 @@ fun BoardScreen(
                         drawContent()
                         for (hold in climb.getHoldsList()) {
                             drawCircle(
-                                color = Color(hold.role.screenColor),
-                                size.width * 0.022f,
-                                center = Offset(
+                                color = Color(hold.role.screenColor), size.width * 0.026f, center = Offset(
                                     hold.xFraction * size.width, hold.yFraction * size.height
-                                ),
-                                1F,
-                                style = Stroke(size.width * 0.01f)
+                                ), 1F, style = Stroke(size.width * 0.006f)
                             )
                         }
                     }
@@ -162,7 +158,7 @@ fun BoardBottomBar(
 
         NavigationBarItem(icon = {
             Icon(
-                painter = painterResource(id = R.drawable.mountain_flag_fill0_wght400_grad0_opsz24),
+                painter = painterResource(id = R.drawable.mountain_flag_half),
                 contentDescription = "Set Boulder"
             )
         }, selected = false, onClick = { })

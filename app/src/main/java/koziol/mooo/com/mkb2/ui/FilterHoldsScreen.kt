@@ -35,17 +35,18 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.IntSize
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import koziol.mooo.com.mkb2.R
 
 @Composable
 fun FilterHoldsScreen(
-    destinations: Map<String, () -> Unit>,
+    navController: NavHostController,
     filterViewModel: FilterViewModel = viewModel(LocalContext.current as ComponentActivity)
 ) {
     Scaffold(topBar = {
         FilterHoldsTopBar(
-            destinations,
-            onApplyFilter = filterViewModel::applyHoldsFilter,
+            navController,
+            onApplyFilter = filterViewModel::updateHolds,
             onClearFilter = filterViewModel::unselectAllHolds
         )
     }, content = { innerPadding ->
@@ -99,9 +100,13 @@ fun FilterHoldsScreen(
                         drawContent()
                         for (hold in filterViewModel.selectedHoldsList) {
                             drawCircle(
-                                color = Color(hold.role.screenColor), size.width * 0.024f, center = Offset(
+                                color = Color(hold.role.screenColor),
+                                size.width * 0.024f,
+                                center = Offset(
                                     hold.xFraction * size.width, hold.yFraction * size.height
-                                ), 1F, style = Stroke(size.width * 0.012f)
+                                ),
+                                1F,
+                                style = Stroke(size.width * 0.012f)
                             )
                         }
                     })
@@ -113,7 +118,9 @@ fun FilterHoldsScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FilterHoldsTopBar(
-    destinations: Map<String, () -> Unit>, onApplyFilter: () -> Unit, onClearFilter: () -> Unit
+    navController: NavHostController,
+    onApplyFilter: () -> Unit,
+    onClearFilter: () -> Unit
 ) {
     TopAppBar(colors = TopAppBarDefaults.topAppBarColors(
         containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -123,7 +130,7 @@ fun FilterHoldsTopBar(
     }, navigationIcon = {
         OutlinedIconButton(onClick = {
             onApplyFilter()
-            destinations["climbsFilter"]?.invoke()
+            navController.popBackStack()
         }, content = {
             Icon(
                 painter = painterResource(id = R.drawable.outline_filter_alt_24),
