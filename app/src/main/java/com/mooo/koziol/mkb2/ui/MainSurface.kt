@@ -30,7 +30,11 @@ fun MainSurface() {
             //val filterViewModel = FilterViewModel()
 
             composable("climbs") { ListClimbsScreen(destinations = destinations) }
-            composable("displayBoard") { BoardScreen(destinations = destinations) }
+            composable("displayBoard") {
+                BoardScreen(
+                    navController = navController, destinations = destinations
+                )
+            }
             composable("climbsFilter") {
                 FilterClimbsScreen(
                     navController = navController, destinations = destinations

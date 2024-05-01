@@ -144,7 +144,7 @@ fun FilterClimbsTopBar(
         }, content = {
             Icon(
                 painter = painterResource(id = R.drawable.outline_filter_alt_24),
-                contentDescription = "Apply filter",
+                contentDescription = null,
             )
         })
 
@@ -152,7 +152,7 @@ fun FilterClimbsTopBar(
         IconButton(onClick = { onClearFilter() }, content = {
             Icon(
                 painter = painterResource(id = R.drawable.outline_filter_alt_off_24),
-                contentDescription = "Clear filter"
+                contentDescription = null
             )
         })
 
@@ -300,19 +300,19 @@ fun MyClimbsFilter(
                 when (ascentsOptions) {
                     FilterOptions.INCLUDE -> Icon(
                         painter = painterResource(id = R.drawable.outline_visibility_24),
-                        contentDescription = "Include",
+                        contentDescription = null,
                         modifier = Modifier.size(FilterChipDefaults.IconSize)
                     )
 
                     FilterOptions.EXCLUDE -> Icon(
                         painter = painterResource(id = R.drawable.outline_visibility_off_24),
-                        contentDescription = "Include",
+                        contentDescription = null,
                         modifier = Modifier.size(FilterChipDefaults.IconSize)
                     )
 
                     FilterOptions.EXCLUSIVE -> Icon(
                         painter = painterResource(id = R.drawable.outline_filter_alt_24),
-                        contentDescription = "Include",
+                        contentDescription = null,
                         modifier = Modifier.size(FilterChipDefaults.IconSize)
                     )
 
@@ -340,19 +340,19 @@ fun MyClimbsFilter(
                 when (triesOptions) {
                     FilterOptions.INCLUDE -> Icon(
                         painter = painterResource(id = R.drawable.outline_visibility_24),
-                        contentDescription = "Include",
+                        contentDescription = null,
                         modifier = Modifier.size(FilterChipDefaults.IconSize)
                     )
 
                     FilterOptions.EXCLUDE -> Icon(
                         painter = painterResource(id = R.drawable.outline_visibility_off_24),
-                        contentDescription = "Include",
+                        contentDescription = null,
                         modifier = Modifier.size(FilterChipDefaults.IconSize)
                     )
 
                     FilterOptions.EXCLUSIVE -> Icon(
                         painter = painterResource(id = R.drawable.outline_filter_alt_24),
-                        contentDescription = "Include",
+                        contentDescription = null,
                         modifier = Modifier.size(FilterChipDefaults.IconSize)
                     )
 
@@ -396,19 +396,19 @@ fun TheirClimbsFilter(
                 when (ascentsOptions) {
                     FilterOptions.INCLUDE -> Icon(
                         painter = painterResource(id = R.drawable.outline_visibility_24),
-                        contentDescription = "Include",
+                        contentDescription = null,
                         modifier = Modifier.size(FilterChipDefaults.IconSize)
                     )
 
                     FilterOptions.EXCLUDE -> Icon(
                         painter = painterResource(id = R.drawable.outline_visibility_off_24),
-                        contentDescription = "Include",
+                        contentDescription = null,
                         modifier = Modifier.size(FilterChipDefaults.IconSize)
                     )
 
                     FilterOptions.EXCLUSIVE -> Icon(
                         painter = painterResource(id = R.drawable.outline_filter_alt_24),
-                        contentDescription = "Include",
+                        contentDescription = null,
                         modifier = Modifier.size(FilterChipDefaults.IconSize)
                     )
 
@@ -436,19 +436,19 @@ fun TheirClimbsFilter(
                 when (triesOptions) {
                     FilterOptions.INCLUDE -> Icon(
                         painter = painterResource(id = R.drawable.outline_visibility_24),
-                        contentDescription = "Include",
+                        contentDescription = null,
                         modifier = Modifier.size(FilterChipDefaults.IconSize)
                     )
 
                     FilterOptions.EXCLUDE -> Icon(
                         painter = painterResource(id = R.drawable.outline_visibility_off_24),
-                        contentDescription = "Include",
+                        contentDescription = null,
                         modifier = Modifier.size(FilterChipDefaults.IconSize)
                     )
 
                     FilterOptions.EXCLUSIVE -> Icon(
                         painter = painterResource(id = R.drawable.outline_filter_alt_24),
-                        contentDescription = "Include",
+                        contentDescription = null,
                         modifier = Modifier.size(FilterChipDefaults.IconSize)
                     )
 
@@ -478,7 +478,7 @@ fun SetterFilter(setterName: String?, onSelectSetter: (String) -> Unit, isSelect
         leadingIcon = {
             Icon(
                 painter = painterResource(id = R.drawable.outline_engineering_24),
-                contentDescription = "setter",
+                contentDescription = null,
                 modifier = Modifier.size(FilterChipDefaults.IconSize)
             )
         },
@@ -502,7 +502,7 @@ fun HoldsFilter(onClick: (() -> Unit)?, isSelected: Boolean) {
         leadingIcon = {
             Icon(
                 painter = painterResource(id = R.drawable.background_dot_small_24px),
-                contentDescription = "holds",
+                contentDescription = null,
                 modifier = Modifier.size(FilterChipDefaults.IconSize)
             )
         },

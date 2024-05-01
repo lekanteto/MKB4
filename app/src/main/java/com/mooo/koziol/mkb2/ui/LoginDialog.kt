@@ -93,7 +93,7 @@ fun LoginDialog(onDismissRequest: () -> Unit) {
                 FilledIconButton(modifier = Modifier.padding(16.dp), onClick = onDismissRequest) {
                     Icon(
                         painter = painterResource(id = R.drawable.outline_cancel_24),
-                        contentDescription = "cancel"
+                        contentDescription = null
                     )
                 }
                 FilledIconButton(modifier = Modifier.padding(16.dp), onClick = {
@@ -104,7 +104,7 @@ fun LoginDialog(onDismissRequest: () -> Unit) {
                 }) {
                     Icon(
                         painter = painterResource(id = R.drawable.outline_login_24),
-                        contentDescription = "login"
+                        contentDescription = null
                     )
                 }
 

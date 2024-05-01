@@ -134,7 +134,7 @@ fun FilterHoldsTopBar(
         }, content = {
             Icon(
                 painter = painterResource(id = R.drawable.outline_filter_alt_24),
-                contentDescription = "Apply filter",
+                contentDescription = null,
             )
         })
 
@@ -142,7 +142,7 @@ fun FilterHoldsTopBar(
         IconButton(onClick = { onClearFilter() }, content = {
             Icon(
                 painter = painterResource(id = R.drawable.outline_filter_alt_off_24),
-                contentDescription = "Clear filter"
+                contentDescription = null
             )
         })
     })

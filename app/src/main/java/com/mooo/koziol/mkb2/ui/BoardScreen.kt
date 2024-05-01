@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
@@ -38,6 +37,7 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.IntSize
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import com.mooo.koziol.mkb2.R
 import com.mooo.koziol.mkb2.data.ClimbsRepository
 import kotlin.math.absoluteValue
@@ -46,13 +46,15 @@ import kotlin.math.roundToInt
 
 @Composable
 fun BoardScreen(
-    destinations: Map<String, () -> Unit>, boardViewModel: BoardViewModel = viewModel()
+    navController: NavHostController,
+    destinations: Map<String, () -> Unit>,
+    boardViewModel: BoardViewModel = viewModel()
 ) {
 
     val climb by boardViewModel.currentClimb.collectAsState()
 
     Scaffold(bottomBar = {
-        BoardBottomBar(destinations, climb.uuid)
+        BoardBottomBar(navController, destinations, climb.uuid)
     }) { paddingValues ->
         var dragOffset by remember { mutableFloatStateOf(0f) }
         Column(
@@ -114,9 +116,13 @@ fun BoardScreen(
                         drawContent()
                         for (hold in climb.getHoldsList()) {
                             drawCircle(
-                                color = Color(hold.role.screenColor), size.width * 0.026f, center = Offset(
+                                color = Color(hold.role.screenColor),
+                                size.width * 0.026f,
+                                center = Offset(
                                     hold.xFraction * size.width, hold.yFraction * size.height
-                                ), 1F, style = Stroke(size.width * 0.006f)
+                                ),
+                                1F,
+                                style = Stroke(size.width * 0.006f)
                             )
                         }
                     }
@@ -138,7 +144,7 @@ fun BoardScreen(
 
 @Composable
 fun BoardBottomBar(
-    destinations: Map<String, () -> Unit>, climbUuid: String
+    navController: NavHostController, destinations: Map<String, () -> Unit>, climbUuid: String
 ) {
     val uriHandler = LocalUriHandler.current
 
@@ -146,34 +152,35 @@ fun BoardBottomBar(
         NavigationBarItem(icon = {
             Icon(
                 painter = painterResource(id = R.drawable.outline_bookmark_add_24),
-                contentDescription = "Set Boulder"
+                contentDescription = null
             )
-        }, selected = false, onClick = { })
+
+        }, selected = false, onClick = { }, enabled = false)
 
         NavigationBarItem(icon = {
             Icon(
-                imageVector = Icons.Outlined.Search, contentDescription = "Search Boulder"
+                imageVector = Icons.Outlined.Search, contentDescription = null
             )
-        }, selected = false, onClick = { })
+        }, selected = false, onClick = { navController.popBackStack() })
 
         NavigationBarItem(icon = {
             Icon(
                 painter = painterResource(id = R.drawable.mountain_flag_half),
-                contentDescription = "Set Boulder"
+                contentDescription = null
             )
-        }, selected = false, onClick = { })
+        }, selected = false, onClick = { }, enabled = false)
 
         NavigationBarItem(icon = {
             Icon(
                 painter = painterResource(id = R.drawable.mountain_flag_24px),
-                contentDescription = "Log ascent"
+                contentDescription = null
             )
-        }, selected = false, onClick = { })
+        }, selected = false, onClick = { }, enabled = false)
 
         NavigationBarItem(icon = {
             Icon(
                 painter = painterResource(id = R.drawable.outline_open_in_new_24),
-                contentDescription = "Open in Kilter"
+                contentDescription = null
             )
         },
             selected = false,
@@ -181,13 +188,14 @@ fun BoardBottomBar(
 
     }, floatingActionButton = {
         FloatingActionButton(
-            onClick = destinations["climbsFilter"] ?: {},
-            containerColor = BottomAppBarDefaults.bottomAppBarFabColor,
+            //onClick = destinations["climbsFilter"] ?: {},
+            onClick = {},
+            //containerColor = BottomAppBarDefaults.bottomAppBarFabColor,
             elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation(),
         ) {
             Icon(
                 painter = painterResource(id = R.drawable.outline_wb_twilight_24),
-                contentDescription = "LED connect"
+                contentDescription = null
             )
         }
     })
