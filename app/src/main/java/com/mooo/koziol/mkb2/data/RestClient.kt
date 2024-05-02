@@ -11,6 +11,7 @@ import io.ktor.client.plugins.auth.Auth
 import io.ktor.client.plugins.auth.providers.BearerTokens
 import io.ktor.client.plugins.auth.providers.bearer
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.request.delete
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
@@ -292,7 +293,6 @@ object RestClient {
     }
 
     suspend fun setup(db: SQLiteDatabase) {
-
         this.db = db
         val user = ConfigRepository.getCurrentUsername()
         val token: String = ConfigRepository.getSessionTokenForUser(user ?: "") ?: ""
@@ -337,9 +337,21 @@ object RestClient {
         } else {
             Log.d("MKB4", "not inited for login")
         }
-        withContext(Dispatchers.IO) {
-
-        }
-
     }
+
+    suspend fun logout(username: String) {
+        if (this::client.isInitialized) {
+            withContext(Dispatchers.IO) {
+                val sessionToken = ConfigRepository.getSessionTokenForUser(username)
+                val logoutResponse =
+                    client.delete("https://kilterboardapp.com/sessions/$sessionToken", {})
+                ConfigRepository.deleteCurrentSession()
+                close()
+                setup(db)
+            }
+        } else {
+            Log.d("MKB4", "not inited for login")
+        }
+    }
+
 }

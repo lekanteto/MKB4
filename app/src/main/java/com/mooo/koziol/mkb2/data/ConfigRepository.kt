@@ -8,7 +8,12 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
 // At the top level of your kotlin file:
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
@@ -20,6 +25,9 @@ object ConfigRepository {
     private val currentUsernameKey = stringPreferencesKey("currentUsername")
     private val currentUserIdKey = intPreferencesKey("currentUserId")
 
+    private val _isLoggedIn = MutableStateFlow(false)
+    val isLoggedIn = _isLoggedIn.asStateFlow()
+
     suspend fun saveSession(username: String, userId: Int, sessionToken: String) {
         val userKey = stringPreferencesKey(username)
         context.dataStore.edit { settings ->
@@ -27,10 +35,27 @@ object ConfigRepository {
             settings[currentUsernameKey] = username
             settings[currentUserIdKey] = userId
         }
+        _isLoggedIn.value = true
+    }
+
+    suspend fun deleteCurrentSession() {
+        val username = getCurrentUsername()
+        if (!username.isNullOrEmpty()) {
+            val userKey = stringPreferencesKey(username)
+            context.dataStore.edit { settings ->
+                settings.remove(userKey)
+                settings.remove(currentUsernameKey)
+                settings.remove(currentUserIdKey)
+            }
+            _isLoggedIn.value = false
+        }
     }
 
     fun setup(context: Context) {
         this.context = context
+        CoroutineScope(Dispatchers.Default).launch {
+            _isLoggedIn.value = !getCurrentUsername().isNullOrEmpty()
+        }
     }
 
     suspend fun getSessionTokenForUser(username: String): String? {
@@ -48,5 +73,4 @@ object ConfigRepository {
         val settings = context.dataStore.data.first()
         return settings[currentUserIdKey]
     }
-
 }

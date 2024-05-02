@@ -9,8 +9,6 @@ import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
@@ -178,26 +176,37 @@ fun BoardBottomBar(
             )
         }, selected = false, onClick = { }, enabled = false)
 
-        NavigationBarItem(icon = {
+        /*        NavigationBarItem(icon = {
+                    Icon(
+                        painter = painterResource(id = R.drawable.outline_open_in_new_24),
+                        contentDescription = null
+                    )
+                },
+                    selected = false,
+                    onClick = { uriHandler.openUri("https://kilterboardapp.com/climbs/${climbUuid}") })*/
+
+    }, floatingActionButton = {
+        FloatingActionButton(
+            onClick = { uriHandler.openUri("https://kilterboardapp.com/climbs/${climbUuid}") },
+            elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation(),
+        ) {
             Icon(
                 painter = painterResource(id = R.drawable.outline_open_in_new_24),
                 contentDescription = null
             )
-        },
-            selected = false,
-            onClick = { uriHandler.openUri("https://kilterboardapp.com/climbs/${climbUuid}") })
-
-    }, /*floatingActionButton = {
-        FloatingActionButton(
-            //onClick = destinations["climbsFilter"] ?: {},
-            onClick = {},
-            //containerColor = BottomAppBarDefaults.bottomAppBarFabColor,
-            elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation(),
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.outline_wb_twilight_24),
-                contentDescription = null
-            )
         }
-    }*/)
+    }/*floatingActionButton = {
+            FloatingActionButton(
+                //onClick = destinations["climbsFilter"] ?: {},
+                onClick = {},
+                //containerColor = BottomAppBarDefaults.bottomAppBarFabColor,
+                elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation(),
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.outline_wb_twilight_24),
+                    contentDescription = null
+                )
+            }
+        }*/
+    )
 }
