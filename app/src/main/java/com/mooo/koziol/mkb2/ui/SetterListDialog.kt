@@ -40,6 +40,12 @@ fun SetterListDialog(
             val setters by setterListViewModel.setters.collectAsState(initial = emptyList())
 
             Row() {
+                IconButton(onClick = {
+                    onSelect("")
+                    (onDismissRequest)()
+                }) {
+                    Icon(painterResource(id = R.drawable.outline_filter_alt_off_24), null)
+                }
                 TextField(
                     value = searchText,
                     placeholder = { Text("Setter") },
@@ -59,13 +65,6 @@ fun SetterListDialog(
                     },
                     singleLine = true,
                 )
-                IconButton(onClick = {
-                    onSelect("")
-                    (onDismissRequest)()
-                }) {
-                    Icon(painterResource(id = R.drawable.outline_filter_alt_off_24), null)
-                }
-
             }
 
             LazyColumn(

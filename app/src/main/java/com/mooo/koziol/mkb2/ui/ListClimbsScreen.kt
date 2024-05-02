@@ -76,7 +76,7 @@ fun ListClimbsScreen(
             LaunchedEffect(key1 = ClimbsRepository.currentClimb.collectAsState()) {
                 val index =
                     ClimbsRepository.climbs.value.indexOf(ClimbsRepository.currentClimb.value)
-                if(index != -1) {
+                if (index != -1) {
                     listState.scrollToItem(index)
                 }
             }
@@ -139,13 +139,13 @@ fun ClimbsBottomBar(
         NavigationBarItem(icon = {
             Icon(
                 painter = painterResource(id = R.drawable.outline_new_window_24px),
-                contentDescription = "Set Boulder"
+                contentDescription = null
             )
         }, selected = false, onClick = { }, enabled = false)
         NavigationBarItem(icon = {
             Icon(
                 painter = painterResource(id = R.drawable.outline_login_24),
-                contentDescription = "Log in on server"
+                contentDescription = null
             )
         },
             selected = isLoggingIn,
@@ -156,7 +156,7 @@ fun ClimbsBottomBar(
             icon = {
                 Icon(
                     painter = painterResource(id = R.drawable.outline_cloud_download_24),
-                    contentDescription = "Download data from server"
+                    contentDescription = null
                 )
             }, selected = isDownloading, onClick = download, enabled = !isDownloading
         )
@@ -169,7 +169,7 @@ fun ClimbsBottomBar(
         ) {
             Icon(
                 painter = painterResource(id = R.drawable.outline_filter_list_24),
-                contentDescription = "Filter climbs"
+                contentDescription = null
             )
         }
     })
@@ -194,22 +194,23 @@ fun ListClimbsTopBar(
             OutlinedIconButton(onClick = {}, content = {
                 Icon(
                     painter = painterResource(id = R.drawable.outline_bookmarks_24),
-                    contentDescription = "Filter bookmarks"
+                    contentDescription = null
                 )
-            })
+            }, enabled = false
+            )
         }, actions = {
-            OutlinedButton(onClick = { /* do something */ }) {
+            OutlinedButton(enabled = false, onClick = { /* do something */ }) {
                 Text("40°")
                 Spacer(modifier = Modifier.size(10.dp))
                 Icon(
                     painter = painterResource(id = R.drawable.outline_screen_rotation_24),
-                    contentDescription = "Localized description"
+                    contentDescription = null
                 )
             }
             OutlinedIconButton(onClick = destinations["climbsFilter"] ?: {}, content = {
                 Icon(
                     painter = painterResource(id = R.drawable.outline_filter_list_24),
-                    contentDescription = "Filter bookmarks"
+                    contentDescription = null
                 )
             })
         })

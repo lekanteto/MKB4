@@ -159,7 +159,8 @@ fun BoardBottomBar(
 
         NavigationBarItem(icon = {
             Icon(
-                imageVector = Icons.Outlined.Search, contentDescription = null
+                painter = painterResource(id = R.drawable.outline_view_list_24),
+                contentDescription = null
             )
         }, selected = false, onClick = { navController.popBackStack() })
 
@@ -186,7 +187,7 @@ fun BoardBottomBar(
             selected = false,
             onClick = { uriHandler.openUri("https://kilterboardapp.com/climbs/${climbUuid}") })
 
-    }, floatingActionButton = {
+    }, /*floatingActionButton = {
         FloatingActionButton(
             //onClick = destinations["climbsFilter"] ?: {},
             onClick = {},
@@ -198,5 +199,5 @@ fun BoardBottomBar(
                 contentDescription = null
             )
         }
-    })
+    }*/)
 }

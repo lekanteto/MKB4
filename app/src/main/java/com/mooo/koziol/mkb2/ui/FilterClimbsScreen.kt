@@ -376,7 +376,7 @@ fun TheirClimbsFilter(
             .fillMaxSize()
             .padding(5.dp)
     ) {
-        FilterChip(
+        FilterChip(enabled = false,
             modifier = Modifier.padding(5.dp),
             onClick = {
                 onAscentsChanged(
@@ -416,7 +416,7 @@ fun TheirClimbsFilter(
             },
         )
 
-        FilterChip(
+        FilterChip(enabled = false,
             modifier = Modifier.padding(5.dp),
             onClick = {
                 onTriesChanged(
