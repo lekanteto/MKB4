@@ -34,6 +34,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.mooo.koziol.mkb2.R
@@ -59,9 +60,10 @@ fun BoardScreen(
             modifier = Modifier.padding(paddingValues)
         ) {
             Text(
-                text = climb.name + " " + climb.grade + " " + (climb.rating * 100).roundToInt() / 100f
+                text = climb.name + " " + climb.grade + " " + (climb.rating * 100).roundToInt() / 100f,
+                modifier = Modifier.padding(10.dp)
             )
-            Row {
+            Row(modifier = Modifier.padding(10.dp)) {
                 val ascents = ClimbsRepository.getAscentsFor(climb)
                 if (ascents.isNotEmpty()) {
                     Icon(

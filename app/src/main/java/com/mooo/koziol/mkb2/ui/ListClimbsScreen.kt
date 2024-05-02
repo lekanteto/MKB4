@@ -43,10 +43,15 @@ fun ListClimbsScreen(
     )
 ) {
     val isDownloading by listClimbsViewModel.isDownloading.collectAsState()
+    val isLoggedIn by listClimbsViewModel.isLoggedIn.collectAsState()
 
     Scaffold(topBar = { ListClimbsTopBar(destinations) }, bottomBar = {
         ClimbsBottomBar(
-            destinations, listClimbsViewModel::downloadSyncTables, isDownloading, false
+            destinations,
+            listClimbsViewModel::downloadSyncTables,
+            isDownloading,
+            false,
+            isLoggedIn = isLoggedIn
         )
     }, content = { innerPadding ->
         Column(
@@ -131,9 +136,11 @@ fun ClimbsBottomBar(
     destinations: Map<String, () -> Unit>,
     download: () -> Unit,
     isDownloading: Boolean,
-    isLoggingIn: Boolean
+    isLoggingIn: Boolean,
+    isLoggedIn: Boolean,
 ) {
     val showLoginDialog = remember { mutableStateOf(false) }
+    val showSessionDialog = remember { mutableStateOf(false) }
 
     BottomAppBar(actions = {
         NavigationBarItem(icon = {
@@ -142,14 +149,26 @@ fun ClimbsBottomBar(
                 contentDescription = null
             )
         }, selected = false, onClick = { }, enabled = false)
+        val painter = if (isLoggedIn) {
+            painterResource(id = R.drawable.outline_badge_24)
+        } else {
+            painterResource(id = R.drawable.outline_login_24)
+        }
+
         NavigationBarItem(icon = {
             Icon(
-                painter = painterResource(id = R.drawable.outline_login_24),
+                painter = painter,
                 contentDescription = null
             )
         },
             selected = isLoggingIn,
-            onClick = { showLoginDialog.value = true },
+            onClick = {
+                if (isLoggedIn) {
+                    showSessionDialog.value = true
+                } else {
+                    showLoginDialog.value = true
+                }
+                 },
             enabled = !isLoggingIn
         )
         NavigationBarItem(
@@ -179,6 +198,12 @@ fun ClimbsBottomBar(
             showLoginDialog.value = false
         }
     }
+    if (showSessionDialog.value) {
+        SessionDialog {
+            showSessionDialog.value = false
+        }
+    }
+
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
