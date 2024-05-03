@@ -2,6 +2,7 @@ package com.mooo.koziol.mkb2.data
 
 import android.database.sqlite.SQLiteDatabase
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.unit.IntOffset
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -105,5 +106,30 @@ object HoldsRepository {
 
     private fun getDistanceSquared(point: Offset, hold: KBHold): Float {
         return point.minus(Offset(hold.xFraction, hold.yFraction)).getDistanceSquared()
+    }
+
+    fun getLongestDistance(holds: List<KBHold>): Float {
+        var maxDistance = 0f
+        var minDistance: Float
+        var ds: Float
+        holds.forEach { first ->
+            if (first.role != HoldRole.FootHold) {
+                minDistance = Float.MAX_VALUE
+                holds.forEach { second ->
+                    if (second.id != first.id) {
+                        if (second.role != HoldRole.FootHold) {
+                            ds = (Offset(first.xFraction, first.yFraction) - Offset(
+                                second.xFraction, second.yFraction
+                            )).getDistanceSquared()
+                            minDistance = minOf(minDistance, ds)
+                        }
+
+                    }
+                }
+                maxDistance = maxOf(maxDistance, minDistance)
+
+            }
+        }
+        return maxDistance
     }
 }

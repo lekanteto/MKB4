@@ -74,9 +74,9 @@ class MainActivity : ComponentActivity() {
 
     override fun onStop() {
         CoroutineScope(Dispatchers.IO).launch {
+            RestClient.close()
             val bookmark = BookmarkedFilter(1, "active", ClimbsRepository.activeFilter)
             bookmarkDao.insert(bookmark)
-            RestClient.close()
             //db.close()
             //mkbDb.close()
         }

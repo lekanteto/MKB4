@@ -1,6 +1,8 @@
 package com.mooo.koziol.mkb2.data
 
+import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
+import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -8,6 +10,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.time.LocalTime
 
 object ClimbsRepository {
 
@@ -200,6 +203,44 @@ object ClimbsRepository {
 
     fun setup(db: SQLiteDatabase) {
         this.db = db
+        storeDistances()
+    }
+
+    private fun storeDistances() {
+        Log.d("MKB rep", "before delete ${LocalTime.now()}")
+        db.delete("climb_cache_fields", null, null)
+        Log.d("MKB rep", "after delete ${LocalTime.now()}")
+
+        val whereString = """
+        climbs.layout_id = 1 -- KB Original
+        AND climbs.is_listed = 1
+        AND climbs.is_draft = 0 -- no drafts for now
+        AND climbs.frames_count = 1 -- only boulders and no routes
+        AND climbs.edge_left > 0 -- dimensions of 12x12 with kick board
+        AND climbs.edge_bottom > 0
+        AND climbs.edge_right < 144
+        AND climbs.edge_top < 156
+        """.trimIndent()
+        val climbsCursor = db.query("climbs", arrayOf("uuid", "frames"), whereString, null, null, null, null)
+
+        var climbUuid: String
+        var frames: String
+        var holdsList: List<KBHold>
+        var maxDistance: Float
+        while (climbsCursor.moveToNext()) {
+            climbUuid = climbsCursor.getString(0)
+            frames = climbsCursor.getString(1)
+            holdsList = HoldsRepository.getHoldsListForHoldsString(frames)
+            maxDistance = HoldsRepository.getLongestDistance(holdsList)
+            db.insert("climb_cache_fields", null, ContentValues().apply {
+                put("climb_uuid", climbUuid)
+                put("display_difficulty", maxDistance)
+            })
+
+        }
+        climbsCursor.close()
+        Log.d("MKB rep", "after distance calcs ${LocalTime.now()}")
+
     }
 }
 
