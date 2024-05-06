@@ -53,6 +53,8 @@ class FilterViewModel(private val savedStateHandle: SavedStateHandle) : ViewMode
             maxGradeIndex = filter.value.maxGradeIndex + 10,
             minGradeDeviation = (filter.value.minGradeDeviation * 10).roundToInt() / 10f,
             maxGradeDeviation = (filter.value.maxGradeDeviation * 10).roundToInt() / 10f,
+            minDistance = (filter.value.minDistance * 100).roundToInt() / 100f,
+            maxDistance = (filter.value.maxDistance * 100).roundToInt() / 100f,
             minAscents = numOfAscentsOptions[filter.value.minAscents],
             setterName = filter.value.setterName,
             includeMyAscents = filter.value.includeMyAscents,
@@ -77,6 +79,10 @@ class FilterViewModel(private val savedStateHandle: SavedStateHandle) : ViewMode
 
     fun updateRatingRange(min: Float, max: Float) {
         savedStateHandle["filter"] = filter.value.copy(minRating = min, maxRating = max)
+    }
+
+    fun updateDistanceRange(min: Float, max: Float) {
+        savedStateHandle["filter"] = filter.value.copy(minDistance = min, maxDistance = max)
     }
 
     fun updateMinNumOfAscents(min: Int) {

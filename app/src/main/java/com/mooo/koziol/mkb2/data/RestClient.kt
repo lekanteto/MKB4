@@ -344,7 +344,7 @@ object RestClient {
             withContext(Dispatchers.IO) {
                 val sessionToken = ConfigRepository.getSessionTokenForUser(username)
                 val logoutResponse =
-                    client.delete("https://kilterboardapp.com/sessions/$sessionToken", {})
+                    client.delete("https://kilterboardapp.com/sessions/$sessionToken") {}
                 ConfigRepository.deleteCurrentSession()
                 close()
                 setup(db)

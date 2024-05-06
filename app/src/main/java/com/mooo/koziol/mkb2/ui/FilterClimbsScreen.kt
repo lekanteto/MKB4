@@ -37,14 +37,14 @@ import com.mooo.koziol.mkb2.R
 import kotlin.math.roundToInt
 
 @Composable
-fun FilterClimbsScreen(navController: NavHostController,
+fun FilterClimbsScreen(
+    navController: NavHostController,
     destinations: Map<String, () -> Unit>,
     filterViewModel: FilterViewModel = viewModel(LocalContext.current as ComponentActivity)
 ) {
     Scaffold(topBar = {
         FilterClimbsTopBar(
-            navController,
-            filterViewModel::applyFilter, filterViewModel::clearAllFilters
+            navController, filterViewModel::applyFilter, filterViewModel::clearAllFilters
         )
     }, content = { innerPadding ->
         Column(
@@ -69,6 +69,12 @@ fun FilterClimbsScreen(navController: NavHostController,
                 selectedMin = filter.minRating,
                 selectedMax = filter.maxRating,
                 onRangeChanged = filterViewModel::updateRatingRange
+            )
+
+            ReachRangeSelector(
+                selectedMin = filter.minDistance,
+                selectedMax = filter.maxDistance,
+                onRangeChanged = filterViewModel::updateDistanceRange
             )
 
             MinAscentsSelector(
@@ -129,8 +135,7 @@ fun FilterClimbsScreen(navController: NavHostController,
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FilterClimbsTopBar(
-    navController: NavHostController,
-    onApplyFilter: () -> Unit, onClearFilter: () -> Unit
+    navController: NavHostController, onApplyFilter: () -> Unit, onClearFilter: () -> Unit
 ) {
     TopAppBar(colors = TopAppBarDefaults.topAppBarColors(
         containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -234,6 +239,36 @@ fun RatingRangeSelector(
                 )
             },
             valueRange = 1f..3f,
+            onValueChangeFinished = {},
+        )
+    }
+}
+
+@Composable
+fun ReachRangeSelector(
+    selectedMin: Float, selectedMax: Float, onRangeChanged: (Float, Float) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(5.dp)
+    ) {
+
+
+        Text(
+            String.format(
+                "Reach: %.1f - %.1f", selectedMin , selectedMax
+            )
+        )
+        RangeSlider(
+            modifier = Modifier.padding(20.dp),
+            value = selectedMin..selectedMax,
+            onValueChange = { range ->
+                onRangeChanged(
+                    range.start, range.endInclusive
+                )
+            },
+            valueRange = 0f..100f,
             onValueChangeFinished = {},
         )
     }
@@ -376,7 +411,8 @@ fun TheirClimbsFilter(
             .fillMaxSize()
             .padding(5.dp)
     ) {
-        FilterChip(enabled = false,
+        FilterChip(
+            enabled = false,
             modifier = Modifier.padding(5.dp),
             onClick = {
                 onAscentsChanged(
@@ -416,7 +452,8 @@ fun TheirClimbsFilter(
             },
         )
 
-        FilterChip(enabled = false,
+        FilterChip(
+            enabled = false,
             modifier = Modifier.padding(5.dp),
             onClick = {
                 onTriesChanged(
