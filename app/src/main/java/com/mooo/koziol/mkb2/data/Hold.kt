@@ -1,6 +1,6 @@
 package com.mooo.koziol.mkb2.data
 
-data class KBHold(val id: Int, val x: Int, val y: Int, var role: HoldRole) {
+data class Hold(val id: Int, val x: Int, val y: Int, var role: HoldRole) {
     val xFraction: Float = x / 144F
     val yFraction: Float = (156 - y) / 156F
 }

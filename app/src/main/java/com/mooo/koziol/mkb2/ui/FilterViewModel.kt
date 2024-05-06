@@ -9,7 +9,7 @@ import com.mooo.koziol.mkb2.data.ClimbFilter
 import com.mooo.koziol.mkb2.data.ClimbsRepository
 import com.mooo.koziol.mkb2.data.HoldRole
 import com.mooo.koziol.mkb2.data.HoldsRepository
-import com.mooo.koziol.mkb2.data.KBHold
+import com.mooo.koziol.mkb2.data.Hold
 import kotlin.math.roundToInt
 
 class FilterViewModel(private val savedStateHandle: SavedStateHandle) : ViewModel() {
@@ -166,7 +166,7 @@ class FilterViewModel(private val savedStateHandle: SavedStateHandle) : ViewMode
         }
     }
 
-    private fun determineHoldColor(hold: KBHold) {
+    private fun determineHoldColor(hold: Hold) {
         if (selectedHoldsList.contains(hold)) {
             hold.role = when (hold.role) {
                 HoldRole.FootHold -> {

@@ -2,20 +2,21 @@ package com.mooo.koziol.mkb2.data
 
 import android.database.sqlite.SQLiteDatabase
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.unit.IntOffset
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlin.math.max
+import kotlin.math.min
 
 object HoldsRepository {
 
-    private lateinit var allHoldsMap: Map<Int, KBHold>
+    private lateinit var allHoldsMap: Map<Int, Hold>
 
-    private fun getHoldById(id: Int): KBHold? {
+    private fun getHoldById(id: Int): Hold? {
         return allHoldsMap[id]
     }
 
-    fun getHoldsListForHoldsString(frames: String): List<KBHold> {
-        val holdsList = mutableListOf<KBHold>()
+    fun getHoldsListForHoldsString(frames: String): List<Hold> {
+        val holdsList = mutableListOf<Hold>()
         frames.split('p').forEach { holdString ->
             if (holdString.isNotEmpty()) {
                 val holdInfo = holdString.split('r')
@@ -36,7 +37,7 @@ object HoldsRepository {
         return holdsList
     }
 
-    fun getHoldsStringForHoldsList(holds: List<KBHold>): String {
+    fun getHoldsStringForHoldsList(holds: List<Hold>): String {
         var holdsString = ""
         holds.sortedBy { it.id }.forEach { hold ->
             holdsString += "p" + hold.id + "r" + hold.role.id
@@ -58,8 +59,8 @@ object HoldsRepository {
         }
     }
 
-    private fun getHoldsFromDb(db: SQLiteDatabase): Map<Int, KBHold> {
-        val holdsMap = HashMap<Int, KBHold>()
+    private fun getHoldsFromDb(db: SQLiteDatabase): Map<Int, Hold> {
+        val holdsMap = HashMap<Int, Hold>()
         val holdsCursor = db.rawQuery(
             """
                 SELECT placements.id, holes.x, holes.y, placement_roles.id
@@ -84,14 +85,14 @@ object HoldsRepository {
             y = holdsCursor.getInt(2)
             role = holdRoles[holdsCursor.getInt(3)] ?: HoldRole.MiddleHold
 
-            holdsMap[id] = KBHold(id, x, y, role)
+            holdsMap[id] = Hold(id, x, y, role)
         }
         holdsCursor.close()
         return holdsMap
     }
 
-    fun getNearestHold(offset: Offset): KBHold {
-        lateinit var nearestHold: KBHold
+    fun getNearestHold(offset: Offset): Hold {
+        lateinit var nearestHold: Hold
         var nearestDistance = Float.MAX_VALUE
         allHoldsMap.forEach {
             val hold = it.value
@@ -104,32 +105,46 @@ object HoldsRepository {
         return nearestHold
     }
 
-    private fun getDistanceSquared(point: Offset, hold: KBHold): Float {
+    private fun getDistanceSquared(point: Offset, hold: Hold): Float {
         return point.minus(Offset(hold.xFraction, hold.yFraction)).getDistanceSquared()
     }
 
-    fun getLongestDistance(holds: List<KBHold>): Float {
+    fun getLongestDistance(holds: List<Hold>): Float {
         var maxDistance = 0f
         var minDistance: Float
+        var minStartDistance: Float = Float.MAX_VALUE
         var ds: Float
         holds.forEach { first ->
-            if (first.role != HoldRole.FootHold) {
-                minDistance = Float.MAX_VALUE
-                holds.forEach { second ->
-                    if (second.id != first.id) {
-                        if (second.role != HoldRole.FootHold) {
-                            ds = (Offset(first.xFraction, first.yFraction) - Offset(
-                                second.xFraction, second.yFraction
-                            )).getDistanceSquared()
-                            minDistance = minOf(minDistance, ds)
-                        }
-
-                    }
-                }
-                maxDistance = maxOf(maxDistance, minDistance)
-
+            ds = getClosestDistance(first, holds)
+            if (first.role == HoldRole.StartHold) {
+                minStartDistance = min(minStartDistance, ds)
+            } else {
+                maxDistance = max(maxDistance, ds)
             }
+            maxDistance = max(maxDistance, minStartDistance)
         }
         return maxDistance
+    }
+
+    fun getClosestDistance(hold: Hold, holds: List<Hold>): Float {
+        var minDistance = Float.MAX_VALUE
+        var currentDistance: Float
+        holds.forEach { other ->
+            if (other.id != hold.id) {
+                if (other.role != HoldRole.FootHold) {
+                    if (!(hold.role == HoldRole.StartHold && other.role == HoldRole.StartHold)) {
+                        currentDistance = getDistance(hold, other)
+                        minDistance = min(minDistance, currentDistance)
+                    }
+                }
+            }
+        }
+        return minDistance
+    }
+
+    private fun getDistance(first: Hold, second: Hold): Float {
+        return (Offset(first.x.toFloat(), first.y.toFloat()) - Offset(
+            second.x.toFloat(), second.y.toFloat()
+        )).getDistance()
     }
 }

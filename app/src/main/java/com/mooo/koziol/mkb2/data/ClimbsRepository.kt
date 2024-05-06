@@ -225,7 +225,7 @@ object ClimbsRepository {
 
         var climbUuid: String
         var frames: String
-        var holdsList: List<KBHold>
+        var holdsList: List<Hold>
         var maxDistance: Float
         while (climbsCursor.moveToNext()) {
             climbUuid = climbsCursor.getString(0)

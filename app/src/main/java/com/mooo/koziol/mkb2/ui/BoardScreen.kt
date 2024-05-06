@@ -13,6 +13,7 @@ import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -33,12 +34,17 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.mooo.koziol.mkb2.R
 import com.mooo.koziol.mkb2.data.ClimbsRepository
+import com.mooo.koziol.mkb2.data.HoldRole
+import com.mooo.koziol.mkb2.data.HoldsRepository
 import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
 
@@ -100,6 +106,8 @@ fun BoardScreen(
                 )
             }
 
+            val textMeasurer = rememberTextMeasurer()
+            val color  = MaterialTheme.colorScheme.onSurface
             Image(painter = painterResource(id = R.drawable._546),
                 "KB image",
                 modifier = Modifier
@@ -123,6 +131,16 @@ fun BoardScreen(
                                 ),
                                 1F,
                                 style = Stroke(size.width * 0.006f)
+                            )
+
+                            var text = hold.id.toString()
+                            if (hold.role != HoldRole.FootHold) {
+                                text = text + "\n" + HoldsRepository.getClosestDistance(hold, climb.getHoldsList())
+                            }
+                            drawText(
+                                textMeasurer, text , topLeft = Offset(
+                                    hold.xFraction * size.width, hold.yFraction * size.height
+                                ), style = TextStyle(color = color)
                             )
                         }
                     }

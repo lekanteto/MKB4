@@ -12,7 +12,7 @@ data class Climb(
     val ascents: Int = 0
 ) {
 
-    fun getHoldsList(): List<KBHold> {
+    fun getHoldsList(): List<Hold> {
         return HoldsRepository.getHoldsListForHoldsString(holdsString)
     }
 }
