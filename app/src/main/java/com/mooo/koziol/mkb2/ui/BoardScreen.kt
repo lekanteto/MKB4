@@ -34,8 +34,6 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
@@ -43,8 +41,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.mooo.koziol.mkb2.R
 import com.mooo.koziol.mkb2.data.ClimbsRepository
-import com.mooo.koziol.mkb2.data.HoldRole
-import com.mooo.koziol.mkb2.data.HoldsRepository
 import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
 
@@ -66,8 +62,8 @@ fun BoardScreen(
             modifier = Modifier.padding(paddingValues)
         ) {
             Text(
-                text = climb.name + " " + climb.grade + " " + (climb.rating * 100).roundToInt() / 100f,
-                modifier = Modifier.padding(10.dp)
+                text = climb.name + " " + climb.grade + " " + (climb.rating * 100).roundToInt() / 100f + " " + climb.calcLongestMove()
+                    .roundToInt(), modifier = Modifier.padding(10.dp)
             )
             Row(modifier = Modifier.padding(10.dp)) {
                 val ascents = ClimbsRepository.getAscentsFor(climb)
@@ -107,7 +103,7 @@ fun BoardScreen(
             }
 
             val textMeasurer = rememberTextMeasurer()
-            val color  = MaterialTheme.colorScheme.onSurface
+            val color = MaterialTheme.colorScheme.onSurface
             Image(painter = painterResource(id = R.drawable._546),
                 "KB image",
                 modifier = Modifier
@@ -133,15 +129,12 @@ fun BoardScreen(
                                 style = Stroke(size.width * 0.006f)
                             )
 
-                            var text = hold.id.toString()
-                            if (hold.role != HoldRole.FootHold) {
-                                text = text + "\n" + HoldsRepository.getClosestDistance(hold, climb.getHoldsList())
-                            }
-                            drawText(
-                                textMeasurer, text , topLeft = Offset(
-                                    hold.xFraction * size.width, hold.yFraction * size.height
-                                ), style = TextStyle(color = color)
-                            )
+                            /*                            val text = hold.id.toString()
+                                                        drawText(
+                                                            textMeasurer, text , topLeft = Offset(
+                                                                hold.xFraction * size.width, hold.yFraction * size.height
+                                                            ), style = TextStyle(color = color)
+                                                        )*/
                         }
                     }
                     .draggable(orientation = Orientation.Horizontal,

@@ -3,6 +3,10 @@ package com.mooo.koziol.mkb2.data
 data class Hold(val id: Int, val x: Int, val y: Int, var role: HoldRole) {
     val xFraction: Float = x / 144F
     val yFraction: Float = (156 - y) / 156F
+
+/*    override fun equals(other: Any?): Boolean {
+        return this === other || (other is Hold && other.id == id)
+    }*/
 }
 
 enum class HoldRole {

@@ -15,7 +15,7 @@ object HoldsRepository {
         return allHoldsMap[id]
     }
 
-    fun getHoldsListForHoldsString(frames: String): List<Hold> {
+    fun getHoldsListForHoldsString(frames: String): MutableList<Hold> {
         val holdsList = mutableListOf<Hold>()
         frames.split('p').forEach { holdString ->
             if (holdString.isNotEmpty()) {
@@ -115,7 +115,7 @@ object HoldsRepository {
         var minStartDistance: Float = Float.MAX_VALUE
         var ds: Float
         holds.forEach { first ->
-            ds = getClosestDistance(first, holds)
+            ds = getShortestMove(first, holds)
             if (first.role == HoldRole.StartHold) {
                 minStartDistance = min(minStartDistance, ds)
             } else {
@@ -126,25 +126,27 @@ object HoldsRepository {
         return maxDistance
     }
 
-    fun getClosestDistance(hold: Hold, holds: List<Hold>): Float {
+    fun getShortestMove(hold: Hold, holds: List<Hold>): Float {
         var minDistance = Float.MAX_VALUE
-        var currentDistance: Float
         holds.forEach { other ->
             if (other.id != hold.id) {
-                if (other.role != HoldRole.FootHold) {
-                    if (!(hold.role == HoldRole.StartHold && other.role == HoldRole.StartHold)) {
-                        currentDistance = getDistance(hold, other)
-                        minDistance = min(minDistance, currentDistance)
-                    }
+                if (!(hold.role == HoldRole.StartHold && other.role == HoldRole.StartHold)) {
+                    minDistance = min(minDistance, getDistance(hold, other))
                 }
             }
         }
         return minDistance
     }
 
-    private fun getDistance(first: Hold, second: Hold): Float {
+    fun getDistance(first: Hold, second: Hold): Float {
         return (Offset(first.x.toFloat(), first.y.toFloat()) - Offset(
             second.x.toFloat(), second.y.toFloat()
         )).getDistance()
+    }
+
+    fun getDistanceSquared(first: Hold, second: Hold): Float {
+        return (Offset(first.x.toFloat(), first.y.toFloat()) - Offset(
+            second.x.toFloat(), second.y.toFloat()
+        )).getDistanceSquared()
     }
 }
