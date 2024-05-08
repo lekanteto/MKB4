@@ -207,9 +207,8 @@ object ClimbsRepository {
     }
 
     private fun storeDistances() {
-        Log.d("MKB rep", "before delete ${LocalTime.now()}")
+        Log.d("MKB rep", "start to store distances ${LocalTime.now()}")
         db.delete("climb_cache_fields", null, null)
-        Log.d("MKB rep", "after delete ${LocalTime.now()}")
 
         val whereString = """
         climbs.layout_id = 1 -- KB Original
