@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -32,9 +34,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mooo.koziol.mkb2.R
 import com.mooo.koziol.mkb2.data.ClimbsRepository
+import com.mooo.koziol.mkb2.data.RestClient
 
 @Composable
 fun ListClimbsScreen(
@@ -171,12 +175,22 @@ fun ClimbsBottomBar(
                  },
             enabled = !isLoggingIn
         )
+
+        val counter = RestClient.downLoadCount.collectAsStateWithLifecycle()
         NavigationBarItem(
             icon = {
-                Icon(
-                    painter = painterResource(id = R.drawable.outline_cloud_download_24),
-                    contentDescription = null
-                )
+                BadgedBox(badge = {
+                    if (isDownloading) {
+                        Badge {
+                            Text("${counter.value}")
+                        }
+                    }
+                }) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.outline_cloud_download_24),
+                        contentDescription = null
+                    )
+                }
             }, selected = isDownloading, onClick = download, enabled = !isDownloading
         )
 

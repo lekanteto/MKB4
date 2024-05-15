@@ -14,7 +14,7 @@ data class ClimbFilter(
     val minGradeDeviation: Float = -0.5f,
     val maxGradeDeviation: Float = 0.5f,
     val minDistance: Float = 0f,
-    val maxDistance: Float = Float.MAX_VALUE,
+    val maxDistance: Float = 60f,
     val minAscents: Int = 0,
     val setterName: String = "",
     val includeMyAscents: Boolean = true,

@@ -1,17 +1,21 @@
 package com.mooo.koziol.mkb2.data
+
 import android.content.Context
 import android.content.SharedPreferences
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.util.Log
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
 
-class OriginalDbOpenHelper(private val context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
+class OriginalDbOpenHelper(private val context: Context) :
+    SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
     private val preferences: SharedPreferences = context.getSharedPreferences(
-        "${context.packageName}.database_versions",
-        Context.MODE_PRIVATE
+        "${context.packageName}.database_versions", Context.MODE_PRIVATE
     )
 
     private fun installedDatabaseIsOutdated(): Boolean {
@@ -45,15 +49,20 @@ class OriginalDbOpenHelper(private val context: Context) : SQLiteOpenHelper(cont
     @Synchronized
     private fun installOrUpdateIfNecessary() {
         if (installedDatabaseIsOutdated()) {
+            Log.d("MKB DBO", "Copy DB start")
             context.deleteDatabase(DATABASE_NAME)
             installDatabaseFromAssets()
             writeDatabaseVersionInPreferences()
+            Log.d("MKB DBO", "Copy DB finish")
+            CoroutineScope(Dispatchers.IO).launch {
+                ConfigRepository.climbCacheIsUpdated(false)
+            }
         }
     }
 
     override fun getWritableDatabase(): SQLiteDatabase {
         installOrUpdateIfNecessary()
-        return super.getReadableDatabase()
+        return super.getWritableDatabase()
     }
 
     override fun getReadableDatabase(): SQLiteDatabase {
@@ -74,7 +83,7 @@ class OriginalDbOpenHelper(private val context: Context) : SQLiteOpenHelper(cont
     companion object {
         const val ASSETS_PATH = "databases"
         const val DATABASE_NAME = "db.sqlite3"
-        const val DATABASE_VERSION = 12
+        const val DATABASE_VERSION = 16
     }
 
 }

@@ -48,15 +48,21 @@ class ClimbGraph(
     }
 
     fun calcLongestMove(): Float {
-        val holds = HoldsRepository.getHoldsListForHoldsString(holdString)
-        val handHolds = holds.filter { hold -> hold.role != HoldRole.FootHold }
-        val startHolds = holds.filter { hold -> hold.role == HoldRole.StartHold }
-        val closerStartHold = getCloserHold(startHolds, handHolds)
-        val relevantHolds =
-            handHolds.filter { it.role != HoldRole.StartHold || it.id == closerStartHold?.id }
+        var distance: Float
+        try {
+            val holds = HoldsRepository.getHoldsListForHoldsString(holdString)
+            val handHolds = holds.filter { hold -> hold.role != HoldRole.FootHold }
+            val startHolds = holds.filter { hold -> hold.role == HoldRole.StartHold }
+            val closerStartHold = getCloserHold(startHolds, handHolds)
+            val relevantHolds =
+                handHolds.filter { it.role != HoldRole.StartHold || it.id == closerStartHold?.id }
 
-        val mstMoves = prims(relevantHolds)
-        val distance = getLongestDistance(mstMoves)
+            val mstMoves = prims(relevantHolds)
+            distance = getLongestDistance(mstMoves)
+
+        } catch (e: Exception) {
+            distance = 0f
+        }
         return distance
     }
 

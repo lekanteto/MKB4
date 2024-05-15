@@ -39,6 +39,8 @@ class FilterViewModel(private val savedStateHandle: SavedStateHandle) : ViewMode
         "filter", ClimbsRepository.activeFilter.copy(
             minGradeIndex = ClimbsRepository.activeFilter.minGradeIndex - 10,
             maxGradeIndex = ClimbsRepository.activeFilter.maxGradeIndex - 10,
+            minDistance = ClimbsRepository.activeFilter.minDistance/10,
+            maxDistance = ClimbsRepository.activeFilter.maxDistance/10,
             minAscents = numOfAscentsOptions.indexOf(ClimbsRepository.activeFilter.minAscents)
                 .coerceIn(0, numOfAscentsOptions.lastIndex)
         )
@@ -53,8 +55,8 @@ class FilterViewModel(private val savedStateHandle: SavedStateHandle) : ViewMode
             maxGradeIndex = filter.value.maxGradeIndex + 10,
             minGradeDeviation = (filter.value.minGradeDeviation * 10).roundToInt() / 10f,
             maxGradeDeviation = (filter.value.maxGradeDeviation * 10).roundToInt() / 10f,
-            minDistance = (filter.value.minDistance * 100).roundToInt() / 100f,
-            maxDistance = (filter.value.maxDistance * 100).roundToInt() / 100f,
+            minDistance = (filter.value.minDistance * 10).roundToInt().toFloat(),
+            maxDistance = (filter.value.maxDistance * 10).roundToInt().toFloat(),
             minAscents = numOfAscentsOptions[filter.value.minAscents],
             setterName = filter.value.setterName,
             includeMyAscents = filter.value.includeMyAscents,
@@ -124,7 +126,9 @@ class FilterViewModel(private val savedStateHandle: SavedStateHandle) : ViewMode
         savedStateHandle["filter"] = ClimbFilter(
             name = ClimbsRepository.activeFilter.name,
             minGradeIndex = 0,
-            maxGradeIndex = gradeNames.lastIndex
+            maxGradeIndex = gradeNames.lastIndex,
+            minDistance = 2f,
+            maxDistance = 6f
         )
         unselectAllHolds()
     }

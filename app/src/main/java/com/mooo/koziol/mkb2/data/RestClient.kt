@@ -18,6 +18,8 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -27,6 +29,9 @@ object RestClient {
     private lateinit var db: SQLiteDatabase
 
     private lateinit var client: HttpClient
+
+    private var _downloadCount = MutableStateFlow(0)
+    var downLoadCount = _downloadCount.asStateFlow()
 
     suspend fun downloadSharedData() {
         if (this::client.isInitialized) {
@@ -49,7 +54,6 @@ object RestClient {
 
                     }
                 }
-
                 updateClimbs(syncResponse.pUT.climbs, climbsDate)
                 updateClimbStats(syncResponse.pUT.climbStats, statsDate)
             }
@@ -64,8 +68,9 @@ object RestClient {
     ) {
         withContext(Dispatchers.IO) {
             Log.d("Mkb4", "in updateClimbStats")
+            _downloadCount.value = 0
             newClimbStats.forEach { stats ->
-
+                _downloadCount.value++
                 val row = ContentValues(9)
                 row.put("climb_uuid", stats.climbUuid)
                 row.put("angle", stats.angle)
@@ -98,7 +103,9 @@ object RestClient {
     private suspend fun updateClimbs(newClimbs: List<SyncResponse.PUT.Climb>, date: String) {
         Log.d("Mkb4", "in updateClimbs")
         withContext(Dispatchers.IO) {
+            _downloadCount.value = 0
             newClimbs.forEach { climb ->
+                _downloadCount.value++
                 val row = ContentValues(18)
                 row.put("uuid", climb.uuid)
                 row.put("layout_id", climb.layoutId)
@@ -120,6 +127,8 @@ object RestClient {
                 row.put("created_at", climb.createdAt)
 
                 db.insertWithOnConflict("climbs", null, row, CONFLICT_REPLACE)
+                val myClimb = Climb(uuid = climb.uuid, holdsString = climb.frames)
+                ClimbsRepository.storeDistanceForClimb(myClimb)
             }
 
             val syncDateRow = ContentValues(2)
@@ -171,7 +180,9 @@ object RestClient {
     ) {
         Log.d("Mkb4", "in updateAscents")
         withContext(Dispatchers.IO) {
+            _downloadCount.value = 0
             newAscents.forEach { ascent ->
+                _downloadCount.value++
                 val row = ContentValues(18)
                 row.put("uuid", ascent.uuid)
                 //row.put("wall_uuid", ascent.wallUuid)
@@ -210,7 +221,9 @@ object RestClient {
     private suspend fun updateBids(newBids: List<SyncResponse.PUT.Bid>, date: String, userId: Int) {
         Log.d("Mkb4", "in updateBids")
         withContext(Dispatchers.IO) {
+            _downloadCount.value = 0
             newBids.forEach { bid ->
+                _downloadCount.value++
                 val row = ContentValues(9)
                 row.put("uuid", bid.uuid)
                 row.put("user_id", bid.userId)

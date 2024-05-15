@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -13,6 +14,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.last
+import kotlinx.coroutines.flow.lastOrNull
 import kotlinx.coroutines.launch
 
 // At the top level of your kotlin file:
@@ -24,9 +27,22 @@ object ConfigRepository {
     private lateinit var context: Context
     private val currentUsernameKey = stringPreferencesKey("currentUsername")
     private val currentUserIdKey = intPreferencesKey("currentUserId")
+    private val climbCacheUpdated = booleanPreferencesKey("climbCacheUpdated")
 
     private val _isLoggedIn = MutableStateFlow(false)
     val isLoggedIn = _isLoggedIn.asStateFlow()
+
+    suspend fun climbCacheIsUpdated(success: Boolean) {
+        context.dataStore.edit { settings ->
+            settings[climbCacheUpdated] = success
+        }
+    }
+
+    suspend fun isClimbCacheUpdated(): Boolean? {
+        val settings = context.dataStore.data.first()
+        return settings[climbCacheUpdated]
+    }
+
 
     suspend fun saveSession(username: String, userId: Int, sessionToken: String) {
         val userKey = stringPreferencesKey(username)

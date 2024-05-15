@@ -126,7 +126,7 @@ object HoldsRepository {
         return maxDistance
     }
 
-    fun getShortestMove(hold: Hold, holds: List<Hold>): Float {
+    private fun getShortestMove(hold: Hold, holds: List<Hold>): Float {
         var minDistance = Float.MAX_VALUE
         holds.forEach { other ->
             if (other.id != hold.id) {

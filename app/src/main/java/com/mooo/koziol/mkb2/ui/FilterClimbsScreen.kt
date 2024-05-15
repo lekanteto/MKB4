@@ -185,7 +185,7 @@ fun GradeRangeSelector(
 
         Text("Schwierigkeit: $minGrade - $maxGrade")
         RangeSlider(
-            modifier = Modifier.padding(20.dp),
+            modifier = Modifier.padding(10.dp),
             value = selectedMin.toFloat()..selectedMax.toFloat(),
             steps = grades.size - 2,
             onValueChange = { range ->
@@ -203,7 +203,7 @@ fun GradeRangeSelector(
             )
         )
         RangeSlider(
-            modifier = Modifier.padding(20.dp),
+            modifier = Modifier.padding(10.dp),
             value = selectedMinDev..selectedMaxDev,
             //steps = 9,
             onValueChange = { range -> onDeviationChanged(range.start, range.endInclusive) },
@@ -230,7 +230,7 @@ fun RatingRangeSelector(
             )
         )
         RangeSlider(
-            modifier = Modifier.padding(20.dp),
+            modifier = Modifier.padding(10.dp),
             value = selectedMin..selectedMax,
             //steps = 29,
             onValueChange = { range ->
@@ -261,14 +261,14 @@ fun ReachRangeSelector(
             )
         )
         RangeSlider(
-            modifier = Modifier.padding(20.dp),
+            modifier = Modifier.padding(10.dp),
             value = selectedMin..selectedMax,
             onValueChange = { range ->
                 onRangeChanged(
                     range.start, range.endInclusive
                 )
             },
-            valueRange = 0f..100f,
+            valueRange = 2f..6f,
             onValueChangeFinished = {},
         )
     }
@@ -287,7 +287,7 @@ fun MinAscentsSelector(
             "Min number of ascents: ${options[min]}"
         )
         Slider(
-            modifier = Modifier.padding(20.dp),
+            modifier = Modifier.padding(10.dp),
             value = min.toFloat(),
             steps = options.size - 2,
             onValueChange = { value ->

@@ -2,6 +2,7 @@ package com.mooo.koziol.mkb2.data
 
 import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
+import android.database.sqlite.SQLiteDatabase.CONFLICT_REPLACE
 import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -49,6 +50,16 @@ object ClimbsRepository {
 
         val holdsFilter = filter.holds.replace("p", "%p") + "%"
 
+        val minDist = if (filter.minDistance == 20f) {
+            0
+        } else {
+            filter.minDistance
+        }
+        val maxDist = if (filter.maxDistance == 60f) {
+            Float.MAX_VALUE
+        } else {
+            filter.maxDistance
+        }
         return arrayOf(
             filter.name,
             holdsFilter,
@@ -59,6 +70,8 @@ object ClimbsRepository {
             (filter.maxGradeIndex + 0.49f).toString(),
             (filter.minGradeDeviation - 0.05f).toString(),
             (filter.maxGradeDeviation + 0.05f).toString(),
+            minDist.toString(),
+            maxDist.toString(),
             filter.minAscents.toString(),
             filter.setterName,
             ignoreSetter,
@@ -91,6 +104,8 @@ object ClimbsRepository {
                          ON climb_stats.climb_uuid = climbs.uuid
                        JOIN difficulty_grades
                          ON difficulty_grades.difficulty = Round(climb_stats.difficulty_average)
+                       LEFT JOIN climb_cache_fields
+                         ON climb_cache_fields.climb_uuid = climbs.uuid
                 WHERE  climbs.layout_id = 1 -- KB Original
                        AND climbs.is_listed = 1
                        AND climbs.is_draft = 0 -- no drafts for now
@@ -109,6 +124,7 @@ object ClimbsRepository {
                        CAST ( climb_stats.difficulty_average -
                        Round(climb_stats.difficulty_average) AS REAL ) 
                        BETWEEN ? AND ? -- min/max grade deviation
+                       AND climb_cache_fields.display_difficulty BETWEEN ? AND ? -- longest move
                        AND climb_stats.ascensionist_count >= ? -- min num of ascents
                        AND (climbs.setter_username = ? OR ?) -- set by
                        AND 
@@ -203,7 +219,12 @@ object ClimbsRepository {
 
     fun setup(db: SQLiteDatabase) {
         this.db = db
-        storeDistances()
+        CoroutineScope(Dispatchers.IO).launch {
+            if (ConfigRepository.isClimbCacheUpdated() != true) {
+                storeDistances()
+                ConfigRepository.climbCacheIsUpdated(true)
+            }
+        }
     }
 
     private fun storeDistances() {
@@ -220,25 +241,27 @@ object ClimbsRepository {
         AND climbs.edge_right < 144
         AND climbs.edge_top < 156
         """.trimIndent()
-        val climbsCursor = db.query("climbs", arrayOf("uuid", "frames"), whereString, null, null, null, null)
+        val climbsCursor =
+            db.query("climbs", arrayOf("uuid", "frames"), whereString, null, null, null, null)
 
         var climbUuid: String
         var frames: String
-        var holdsList: List<Hold>
-        var maxDistance: Float
+        var climb: Climb
         while (climbsCursor.moveToNext()) {
             climbUuid = climbsCursor.getString(0)
             frames = climbsCursor.getString(1)
-            holdsList = HoldsRepository.getHoldsListForHoldsString(frames)
-            maxDistance = HoldsRepository.getLongestDistance(holdsList)
-            db.insert("climb_cache_fields", null, ContentValues().apply {
-                put("climb_uuid", climbUuid)
-                put("display_difficulty", maxDistance)
-            })
-
+            climb = Climb(uuid = climbUuid, holdsString = frames)
+            storeDistanceForClimb(climb)
         }
         climbsCursor.close()
         Log.d("MKB rep", "after distance calcs ${LocalTime.now()}")
+    }
+
+    fun storeDistanceForClimb(climb: Climb) {
+        db.insertWithOnConflict("climb_cache_fields", null, ContentValues().apply {
+            put("climb_uuid", climb.uuid)
+            put("display_difficulty", climb.calcLongestMove())
+        }, CONFLICT_REPLACE)
 
     }
 }

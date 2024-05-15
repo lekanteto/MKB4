@@ -44,8 +44,11 @@ class ListClimbsViewModel : ViewModel() {
         CoroutineScope(Dispatchers.Main).launch {
             _isDownloading.value = true
             RestClient.downloadSharedData()
-            val userId = ConfigRepository.getCurrentUserId() ?: 0
-            RestClient.downloadUserData(userId)
+            val userId = ConfigRepository.getCurrentUserId()
+            if (userId != null) {
+                RestClient.downloadUserData(userId)
+
+            }
             _isDownloading.value = false
         }
     }
