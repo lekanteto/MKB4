@@ -58,9 +58,9 @@ fun SessionDialog(onDismissRequest: () -> Unit) {
                     )
                 }
                 FilledIconButton(modifier = Modifier.padding(16.dp), onClick = {
+                    onDismissRequest.invoke()
                     CoroutineScope(Dispatchers.IO).launch {
                         RestClient.logout(username)
-                        onDismissRequest.invoke()
                     }
                 }) {
                     Icon(

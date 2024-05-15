@@ -41,7 +41,7 @@ class ListClimbsViewModel : ViewModel() {
     }
 
     fun downloadSyncTables() {
-        CoroutineScope(Dispatchers.Main).launch {
+        CoroutineScope(Dispatchers.IO).launch {
             _isDownloading.value = true
             RestClient.downloadSharedData()
             val userId = ConfigRepository.getCurrentUserId()

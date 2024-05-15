@@ -36,6 +36,7 @@ object RestClient {
     suspend fun downloadSharedData() {
         if (this::client.isInitialized) {
             withContext(Dispatchers.IO) {
+                Log.d("MKB Rest", "Begin download shared data")
                 val syncResponse: SyncResponse =
                     client.post("https://api.kilterboardapp.com/v1/sync") {
                         contentType(ContentType.Application.Json)
@@ -54,8 +55,10 @@ object RestClient {
 
                     }
                 }
+                Log.d("MKB Rest", "End download shared data")
                 updateClimbs(syncResponse.pUT.climbs, climbsDate)
                 updateClimbStats(syncResponse.pUT.climbStats, statsDate)
+
             }
 
         } else {
@@ -97,6 +100,8 @@ object RestClient {
             syncDateRow.put("table_name", "climb_stats")
             syncDateRow.put("last_synchronized_at", date)
             db.update("shared_syncs", syncDateRow, "table_name = ?", arrayOf("climb_stats"))
+            Log.d("Mkb4", "End of updateClimbStats")
+
         }
     }
 
@@ -137,12 +142,16 @@ object RestClient {
             val numOfRows =
                 db.update("shared_syncs", syncDateRow, "table_name = ?", arrayOf("climbs"))
             Log.d("MKB4", numOfRows.toString())
+            Log.d("MKB Rest", "End download climbs")
+
         }
     }
 
     suspend fun downloadUserData(userId: Int) {
         if (this::client.isInitialized) {
             withContext(Dispatchers.IO) {
+                Log.d("MKB Rest", "Start download user data")
+
                 val requestBody = createUserSyncRequestContent(userId)
                 val syncResponse: SyncResponse =
                     client.post("https://api.kilterboardapp.com/v1/sync") {
@@ -168,6 +177,8 @@ object RestClient {
                 if (bidsDate.isNotEmpty()) {
                     updateBids(syncResponse.pUT.bids, bidsDate, userId)
                 }
+                Log.d("MKB Rest", "End download user data")
+
             }
 
         } else {

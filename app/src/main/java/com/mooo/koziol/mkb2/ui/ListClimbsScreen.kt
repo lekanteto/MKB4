@@ -31,6 +31,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -143,8 +144,8 @@ fun ClimbsBottomBar(
     isLoggingIn: Boolean,
     isLoggedIn: Boolean,
 ) {
-    val showLoginDialog = remember { mutableStateOf(false) }
-    val showSessionDialog = remember { mutableStateOf(false) }
+    var showLoginDialog by remember { mutableStateOf(false) }
+    var showSessionDialog by remember { mutableStateOf(false) }
 
     BottomAppBar(actions = {
         NavigationBarItem(icon = {
@@ -168,9 +169,9 @@ fun ClimbsBottomBar(
             selected = isLoggingIn,
             onClick = {
                 if (isLoggedIn) {
-                    showSessionDialog.value = true
+                    showSessionDialog = true
                 } else {
-                    showLoginDialog.value = true
+                    showLoginDialog = true
                 }
                  },
             enabled = !isLoggingIn
@@ -207,14 +208,14 @@ fun ClimbsBottomBar(
         }
     })
 
-    if (showLoginDialog.value) {
+    if (showLoginDialog) {
         LoginDialog {
-            showLoginDialog.value = false
+            showLoginDialog = false
         }
     }
-    if (showSessionDialog.value) {
+    if (showSessionDialog) {
         SessionDialog {
-            showSessionDialog.value = false
+            showSessionDialog = false
         }
     }
 
