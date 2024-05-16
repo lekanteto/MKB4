@@ -6,6 +6,7 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 data class ClimbFilter(
     val name: String = "",
+    val angle: Int = 40,
     val holds: String = "",
     val minRating: Float = 1f,
     val maxRating: Float = 3f,

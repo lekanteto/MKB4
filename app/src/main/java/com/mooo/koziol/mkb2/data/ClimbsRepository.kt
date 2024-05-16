@@ -62,6 +62,7 @@ object ClimbsRepository {
         }
         return arrayOf(
             filter.name,
+            filter.angle.toString(),
             holdsFilter,
             ignoreHolds,
             filter.minRating.toString(),
@@ -114,9 +115,9 @@ object ClimbsRepository {
                        AND climbs.edge_bottom > 0
                        AND climbs.edge_right < 144
                        AND climbs.edge_top < 156
-                       AND climb_stats.angle = 40
-                       -- filters
+                            -- filters
                        AND climbs.name LIKE '%' || ? || '%' -- name
+                       AND climb_stats.angle = ?
                        AND (climbs.frames LIKE ? OR ?)
                        AND climb_stats.quality_average BETWEEN ? AND ? -- min/max rating
                        AND climb_stats.display_difficulty BETWEEN ? AND ? -- min/max difficulty

@@ -9,9 +9,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.Email
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
@@ -34,6 +40,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -162,19 +169,15 @@ fun ClimbsBottomBar(
 
         NavigationBarItem(icon = {
             Icon(
-                painter = painter,
-                contentDescription = null
+                painter = painter, contentDescription = null
             )
-        },
-            selected = isLoggingIn,
-            onClick = {
-                if (isLoggedIn) {
-                    showSessionDialog = true
-                } else {
-                    showLoginDialog = true
-                }
-                 },
-            enabled = !isLoggingIn
+        }, selected = isLoggingIn, onClick = {
+            if (isLoggedIn) {
+                showSessionDialog = true
+            } else {
+                showLoginDialog = true
+            }
+        }, enabled = !isLoggingIn
         )
 
         val counter = RestClient.downLoadCount.collectAsStateWithLifecycle()
@@ -226,6 +229,9 @@ fun ClimbsBottomBar(
 fun ListClimbsTopBar(
     destinations: Map<String, () -> Unit>,
 ) {
+    var expanded by remember { mutableStateOf(false) }
+
+
     TopAppBar(title = {
         Text("MKB2")
     },
@@ -239,7 +245,7 @@ fun ListClimbsTopBar(
             }, enabled = false
             )
         }, actions = {
-            OutlinedButton(enabled = false, onClick = { /* do something */ }) {
+            OutlinedButton(onClick = { expanded = true }) {
                 Text("40°")
                 Spacer(modifier = Modifier.size(10.dp))
                 Icon(
@@ -254,4 +260,29 @@ fun ListClimbsTopBar(
                 )
             })
         })
+
+
+    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+        DropdownMenuItem(text = { Text("Edit") }, onClick = { /* Handle edit! */ }, leadingIcon = {
+            Icon(
+                Icons.Outlined.Edit, contentDescription = null
+            )
+        })
+        DropdownMenuItem(text = { Text("Settings") },
+            onClick = { /* Handle settings! */ },
+            leadingIcon = {
+                Icon(
+                    Icons.Outlined.Settings, contentDescription = null
+                )
+            })
+        HorizontalDivider()
+        DropdownMenuItem(text = { Text("Send Feedback") },
+            onClick = { /* Handle send feedback! */ },
+            leadingIcon = {
+                Icon(
+                    Icons.Outlined.Email, contentDescription = null
+                )
+            },
+            trailingIcon = { Text("F11", textAlign = TextAlign.Center) })
+    }
 }
