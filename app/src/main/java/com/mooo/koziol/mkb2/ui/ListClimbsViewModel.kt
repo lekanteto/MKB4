@@ -11,6 +11,7 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 class ListClimbsViewModel : ViewModel() {
@@ -19,6 +20,8 @@ class ListClimbsViewModel : ViewModel() {
     val searchText = _searchText.asStateFlow()
 
     var climbList = ClimbsRepository.climbs
+
+    var currentAngle = ClimbsRepository.filterFlow.map { filter -> filter.angle }
 
     val isSearching = ClimbsRepository.isQuerying
 
@@ -38,6 +41,10 @@ class ListClimbsViewModel : ViewModel() {
                 }
             }
         }
+    }
+
+    fun onSelectAngle(newAngle: Int) {
+        ClimbsRepository.activeFilter = ClimbsRepository.activeFilter.copy(angle = newAngle)
     }
 
     fun downloadSyncTables() {

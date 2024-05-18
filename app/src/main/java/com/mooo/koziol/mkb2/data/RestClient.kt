@@ -15,6 +15,7 @@ import io.ktor.client.request.delete
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.Dispatchers
@@ -42,6 +43,7 @@ object RestClient {
                         contentType(ContentType.Application.Json)
                         setBody(createSharedSyncRequestContent())
                     }.body()
+                Log.d("MKB Rest", "Received shared data")
 
                 var climbsDate = ""
                 var statsDate = ""
@@ -109,6 +111,7 @@ object RestClient {
         Log.d("Mkb4", "in updateClimbs")
         withContext(Dispatchers.IO) {
             _downloadCount.value = 0
+            db.beginTransaction()
             newClimbs.forEach { climb ->
                 _downloadCount.value++
                 val row = ContentValues(18)
@@ -141,7 +144,9 @@ object RestClient {
             syncDateRow.put("last_synchronized_at", date)
             val numOfRows =
                 db.update("shared_syncs", syncDateRow, "table_name = ?", arrayOf("climbs"))
-            Log.d("MKB4", numOfRows.toString())
+            db.setTransactionSuccessful()
+            db.endTransaction()
+            Log.d("MKB4", "Updated $numOfRows climbs")
             Log.d("MKB Rest", "End download climbs")
 
         }
@@ -192,6 +197,7 @@ object RestClient {
         Log.d("Mkb4", "in updateAscents")
         withContext(Dispatchers.IO) {
             _downloadCount.value = 0
+            db.beginTransaction()
             newAscents.forEach { ascent ->
                 _downloadCount.value++
                 val row = ContentValues(18)
@@ -225,7 +231,9 @@ object RestClient {
 
             val numOfRows =
                 db.insertWithOnConflict("user_syncs", null, syncDateRow, CONFLICT_REPLACE)
-            Log.d("MKB4", numOfRows.toString())
+            db.setTransactionSuccessful()
+            db.endTransaction()
+            Log.d("MKB4", "End of updating ascents")
         }
     }
 
@@ -233,6 +241,7 @@ object RestClient {
         Log.d("Mkb4", "in updateBids")
         withContext(Dispatchers.IO) {
             _downloadCount.value = 0
+            db.beginTransaction()
             newBids.forEach { bid ->
                 _downloadCount.value++
                 val row = ContentValues(9)
@@ -260,7 +269,9 @@ object RestClient {
 
             val numOfRows =
                 db.insertWithOnConflict("user_syncs", null, syncDateRow, CONFLICT_REPLACE)
-            Log.d("MKB4", numOfRows.toString())
+            db.setTransactionSuccessful()
+            db.endTransaction()
+            Log.d("MKB4", "End of updating bids")
         }
     }
 
@@ -323,7 +334,9 @@ object RestClient {
 
         withContext(Dispatchers.Default) {
             client = HttpClient(CIO) {
-                expectSuccess = true
+                engine {
+                    requestTimeout = 20000
+                }
                 install(Auth) {
                     bearer {
                         loadTokens {
@@ -366,15 +379,20 @@ object RestClient {
     suspend fun logout(username: String) {
         if (this::client.isInitialized) {
             withContext(Dispatchers.IO) {
+                Log.d("MKB4", "Send Logout Request")
+
                 val sessionToken = ConfigRepository.getSessionTokenForUser(username)
                 val logoutResponse =
                     client.delete("https://kilterboardapp.com/sessions/$sessionToken") {}
-                ConfigRepository.deleteCurrentSession()
-                close()
-                setup(db)
+                Log.d("MKB4", "Logout Response: $logoutResponse")
+                if (logoutResponse.status == HttpStatusCode.OK) {
+                    ConfigRepository.deleteCurrentSession()
+                    close()
+                    setup(db)
+                }
             }
         } else {
-            Log.d("MKB4", "not inited for login")
+            Log.d("MKB4", "not inited for logout")
         }
     }
 

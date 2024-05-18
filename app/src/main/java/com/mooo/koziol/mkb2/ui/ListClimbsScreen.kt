@@ -9,10 +9,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Edit
-import androidx.compose.material.icons.outlined.Email
-import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.BottomAppBar
@@ -40,7 +36,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -56,8 +51,13 @@ fun ListClimbsScreen(
 ) {
     val isDownloading by listClimbsViewModel.isDownloading.collectAsState()
     val isLoggedIn by listClimbsViewModel.isLoggedIn.collectAsState()
+    val currentAngle by listClimbsViewModel.currentAngle.collectAsState(initial = 3)
 
-    Scaffold(topBar = { ListClimbsTopBar(destinations) }, bottomBar = {
+    Scaffold(topBar = {
+        ListClimbsTopBar(
+            destinations, listClimbsViewModel::onSelectAngle, currentAngle
+        )
+    }, bottomBar = {
         ClimbsBottomBar(
             destinations,
             listClimbsViewModel::downloadSyncTables,
@@ -91,11 +91,12 @@ fun ListClimbsScreen(
 
             val listState = rememberLazyListState()
             LaunchedEffect(key1 = ClimbsRepository.currentClimb.collectAsState()) {
-                val index =
+                var index =
                     ClimbsRepository.climbs.value.indexOf(ClimbsRepository.currentClimb.value)
-                if (index != -1) {
-                    listState.scrollToItem(index)
+                if (index == -1) {
+                    index = 0
                 }
+                listState.scrollToItem(index)
             }
 
 
@@ -186,7 +187,14 @@ fun ClimbsBottomBar(
                 BadgedBox(badge = {
                     if (isDownloading) {
                         Badge {
-                            Text("${counter.value}")
+                            if (counter.value > 0) {
+                                Text("${counter.value}")
+                            } else {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.outline_downloading_24),
+                                    contentDescription = null
+                                )
+                            }
                         }
                     }
                 }) {
@@ -228,6 +236,8 @@ fun ClimbsBottomBar(
 @Composable
 fun ListClimbsTopBar(
     destinations: Map<String, () -> Unit>,
+    onSelectAngle: (Int) -> Unit,
+    currentAngle: Int,
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -246,12 +256,25 @@ fun ListClimbsTopBar(
             )
         }, actions = {
             OutlinedButton(onClick = { expanded = true }) {
-                Text("40°")
+                Text("$currentAngle°")
                 Spacer(modifier = Modifier.size(10.dp))
                 Icon(
                     painter = painterResource(id = R.drawable.outline_screen_rotation_24),
                     contentDescription = null
                 )
+
+                DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                    for (angle in 0..70 step 5) {
+                        DropdownMenuItem(
+                            text = { Text("$angle°") },
+                            onClick = {
+                                onSelectAngle(angle)
+                                expanded = false
+                            },
+                        )
+                    }
+
+                }
             }
             OutlinedIconButton(onClick = destinations["climbsFilter"] ?: {}, content = {
                 Icon(
@@ -260,29 +283,4 @@ fun ListClimbsTopBar(
                 )
             })
         })
-
-
-    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-        DropdownMenuItem(text = { Text("Edit") }, onClick = { /* Handle edit! */ }, leadingIcon = {
-            Icon(
-                Icons.Outlined.Edit, contentDescription = null
-            )
-        })
-        DropdownMenuItem(text = { Text("Settings") },
-            onClick = { /* Handle settings! */ },
-            leadingIcon = {
-                Icon(
-                    Icons.Outlined.Settings, contentDescription = null
-                )
-            })
-        HorizontalDivider()
-        DropdownMenuItem(text = { Text("Send Feedback") },
-            onClick = { /* Handle send feedback! */ },
-            leadingIcon = {
-                Icon(
-                    Icons.Outlined.Email, contentDescription = null
-                )
-            },
-            trailingIcon = { Text("F11", textAlign = TextAlign.Center) })
-    }
 }

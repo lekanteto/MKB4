@@ -17,7 +17,7 @@ object ClimbsRepository {
 
     private lateinit var db: SQLiteDatabase
 
-    private val filterFlow = MutableStateFlow(ClimbFilter())
+    val filterFlow = MutableStateFlow(ClimbFilter())
     var activeFilter: ClimbFilter
         get() = filterFlow.value
         set(value) {

@@ -4,8 +4,6 @@ import android.database.sqlite.SQLiteDatabase
 import androidx.compose.ui.geometry.Offset
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kotlin.math.max
-import kotlin.math.min
 
 object HoldsRepository {
 
@@ -107,35 +105,6 @@ object HoldsRepository {
 
     private fun getDistanceSquared(point: Offset, hold: Hold): Float {
         return point.minus(Offset(hold.xFraction, hold.yFraction)).getDistanceSquared()
-    }
-
-    fun getLongestDistance(holds: List<Hold>): Float {
-        var maxDistance = 0f
-        var minDistance: Float
-        var minStartDistance: Float = Float.MAX_VALUE
-        var ds: Float
-        holds.forEach { first ->
-            ds = getShortestMove(first, holds)
-            if (first.role == HoldRole.StartHold) {
-                minStartDistance = min(minStartDistance, ds)
-            } else {
-                maxDistance = max(maxDistance, ds)
-            }
-            maxDistance = max(maxDistance, minStartDistance)
-        }
-        return maxDistance
-    }
-
-    private fun getShortestMove(hold: Hold, holds: List<Hold>): Float {
-        var minDistance = Float.MAX_VALUE
-        holds.forEach { other ->
-            if (other.id != hold.id) {
-                if (!(hold.role == HoldRole.StartHold && other.role == HoldRole.StartHold)) {
-                    minDistance = min(minDistance, getDistance(hold, other))
-                }
-            }
-        }
-        return minDistance
     }
 
     fun getDistance(first: Hold, second: Hold): Float {
