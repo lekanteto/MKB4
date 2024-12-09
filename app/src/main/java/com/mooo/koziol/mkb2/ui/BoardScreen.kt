@@ -8,12 +8,13 @@ import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -34,7 +35,6 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -72,15 +72,16 @@ fun BoardScreen(
                         painter = painterResource(id = R.drawable.mountain_flag_24px),
                         contentDescription = null
                     )
-                    Text(text = ascents.last().climbedAt)
+                    Text(text = ascents.last().climbedAt.substringBefore(' '))
                 }
                 val bids = ClimbsRepository.getBidsFor(climb)
                 if (bids.isNotEmpty()) {
+                    Spacer(modifier = Modifier.size(15.dp))
                     Icon(
                         painter = painterResource(id = R.drawable.mountain_flag_half),
                         contentDescription = null
                     )
-                    Text(text = bids.last().climbedAt)
+                    Text(text = bids.last().climbedAt.substringBefore(' '))
                 }
 
             }
@@ -102,8 +103,7 @@ fun BoardScreen(
                 )
             }
 
-            val textMeasurer = rememberTextMeasurer()
-            val color = MaterialTheme.colorScheme.onSurface
+            Spacer(modifier = Modifier.weight(0.5f))
             Image(painter = painterResource(id = R.drawable._546),
                 "KB image",
                 modifier = Modifier
@@ -149,6 +149,7 @@ fun BoardScreen(
                         }
 
                     ))
+            Spacer(modifier = Modifier.weight(0.5f))
         }
     }
 }

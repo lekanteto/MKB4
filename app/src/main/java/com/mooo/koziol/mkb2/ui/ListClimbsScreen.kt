@@ -1,8 +1,10 @@
 package com.mooo.koziol.mkb2.ui
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -12,6 +14,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -34,6 +37,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -42,6 +46,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mooo.koziol.mkb2.R
 import com.mooo.koziol.mkb2.data.ClimbsRepository
 import com.mooo.koziol.mkb2.data.RestClient
+import java.util.Locale
 
 @Composable
 fun ListClimbsScreen(
@@ -117,29 +122,29 @@ fun ListClimbsScreen(
                                 supportingContent = {
                                     Text(
                                         String.format(
-                                            "${climb.grade} %.1f set by ${climb.setter}",
+                                            "${climb.grade} %+.1f by ${climb.setter}",
                                             climb.deviation
                                         )
                                     )
                                 },
-
                                 trailingContent = {
                                     Text(
                                         String.format(
-                                            "%.2f", climb.rating
+                                            Locale.GERMANY, "%.2f", climb.rating
                                         )
                                     )
                                 })
                             HorizontalDivider()
-
                         }
-
                     }
                 }
             } else {
-                Text("Searching...")
+                Box(modifier = Modifier.fillMaxSize()) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
             }
-
         }
     })
 }
@@ -264,7 +269,7 @@ fun ListClimbsTopBar(
                 )
 
                 DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                    for (angle in 0..70 step 5) {
+                    for (angle in 20..70 step 5) {
                         DropdownMenuItem(
                             text = { Text("$angle°") },
                             onClick = {

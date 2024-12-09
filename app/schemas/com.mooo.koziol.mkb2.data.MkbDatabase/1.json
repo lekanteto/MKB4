@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "fea622ce716c1b3ce0ba00e0bd050df0",
+    "identityHash": "835ebb56d92fe369a26a368efadcc985",
     "entities": [
       {
         "tableName": "filters",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `bookmark_name` TEXT NOT NULL, `name` TEXT NOT NULL, `holds` TEXT NOT NULL, `minRating` REAL NOT NULL, `maxRating` REAL NOT NULL, `minGradeIndex` INTEGER NOT NULL, `maxGradeIndex` INTEGER NOT NULL, `minGradeDeviation` REAL NOT NULL, `maxGradeDeviation` REAL NOT NULL, `minAscents` INTEGER NOT NULL, `setterName` TEXT NOT NULL, `includeMyAscents` INTEGER NOT NULL, `onlyMyAscents` INTEGER NOT NULL, `includeMyTries` INTEGER NOT NULL, `onlyMyTries` INTEGER NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `bookmark_name` TEXT NOT NULL, `name` TEXT NOT NULL, `holds` TEXT NOT NULL, `minRating` REAL NOT NULL, `maxRating` REAL NOT NULL, `minGradeIndex` INTEGER NOT NULL, `maxGradeIndex` INTEGER NOT NULL, `minGradeDeviation` REAL NOT NULL, `maxGradeDeviation` REAL NOT NULL, `minDistance` REAL NOT NULL, `maxDistance` REAL NOT NULL, `minAscents` INTEGER NOT NULL, `setterName` TEXT NOT NULL, `includeMyAscents` INTEGER NOT NULL, `onlyMyAscents` INTEGER NOT NULL, `includeMyTries` INTEGER NOT NULL, `onlyMyTries` INTEGER NOT NULL)",
         "fields": [
           {
             "fieldPath": "id",
@@ -69,6 +69,18 @@
             "notNull": true
           },
           {
+            "fieldPath": "climbFilter.minDistance",
+            "columnName": "minDistance",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "climbFilter.maxDistance",
+            "columnName": "maxDistance",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
             "fieldPath": "climbFilter.minAscents",
             "columnName": "minAscents",
             "affinity": "INTEGER",
@@ -118,7 +130,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'fea622ce716c1b3ce0ba00e0bd050df0')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '835ebb56d92fe369a26a368efadcc985')"
     ]
   }
 }

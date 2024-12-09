@@ -23,16 +23,14 @@ object ClimbsRepository {
         set(value) {
             filterFlow.value = value
             CoroutineScope(Dispatchers.IO).launch {
-                climbsList = getFilteredClimbs(value)
-                _climbs.value = climbsList
+                _climbs.value = getFilteredClimbs(value)
             }
         }
 
     val currentClimb = MutableStateFlow(Climb())
 
-    private var climbsList = emptyList<Climb>()
 
-    private val _climbs = MutableStateFlow(climbsList)
+    private val _climbs = MutableStateFlow(emptyList<Climb>())
     val climbs = _climbs.asStateFlow()
 
 
@@ -60,6 +58,7 @@ object ClimbsRepository {
         } else {
             filter.maxDistance
         }
+
         return arrayOf(
             filter.name,
             filter.angle.toString(),
@@ -79,8 +78,24 @@ object ClimbsRepository {
             includeNotClimbedByMe,
             includeMyAscents,
             includeNotTriedByMe,
-            includeMyTries
+            includeMyTries,
         )
+    }
+
+    private fun convertToOrderBy(filter: ClimbFilter): String {
+        var sortString = " ORDER BY " + when (filter.sortOrder) {
+            SortOrder.RATING -> "climb_stats.quality_average"
+            SortOrder.DIFFICULTY -> "climb_stats.display_difficulty"
+            SortOrder.AGE -> "climbs.created_at"
+            SortOrder.ASCENTS -> "climb_stats.ascensionist_count"
+        }
+
+        sortString += if (filter.sortDescending) {
+            " DESC "
+        } else {
+            " ASC "
+        }
+        return sortString
     }
 
     private suspend fun getFilteredClimbs(filter: ClimbFilter): List<Climb> {
@@ -140,10 +155,7 @@ object ClimbsRepository {
                        AND 
                        (climbs.uuid NOT IN (SELECT bids.climb_uuid FROM bids)  -- exclude my tries
                        OR ?)
-                ORDER  BY climb_stats.quality_average DESC,
-                          climb_stats.ascensionist_count DESC
-                LIMIT  100 
-                """.trimIndent(), convertToSqlArgs(filter)
+                """.trimIndent() + convertToOrderBy(filter) + " LIMIT  100 ", convertToSqlArgs(filter)
                 )
 
                 val uuidIndex = climbsCursor.getColumnIndexOrThrow("climbUuid")

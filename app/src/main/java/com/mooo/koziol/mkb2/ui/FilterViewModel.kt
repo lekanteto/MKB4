@@ -4,12 +4,13 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import kotlinx.coroutines.flow.StateFlow
 import com.mooo.koziol.mkb2.data.ClimbFilter
 import com.mooo.koziol.mkb2.data.ClimbsRepository
+import com.mooo.koziol.mkb2.data.Hold
 import com.mooo.koziol.mkb2.data.HoldRole
 import com.mooo.koziol.mkb2.data.HoldsRepository
-import com.mooo.koziol.mkb2.data.Hold
+import com.mooo.koziol.mkb2.data.SortOrder
+import kotlinx.coroutines.flow.StateFlow
 import kotlin.math.roundToInt
 
 class FilterViewModel(private val savedStateHandle: SavedStateHandle) : ViewModel() {
@@ -63,6 +64,8 @@ class FilterViewModel(private val savedStateHandle: SavedStateHandle) : ViewMode
             onlyMyAscents = filter.value.onlyMyAscents,
             includeMyTries = filter.value.includeMyTries,
             onlyMyTries = filter.value.onlyMyTries,
+            sortOrder = filter.value.sortOrder,
+            sortDescending = filter.value.sortDescending
         )
     }
 
@@ -120,6 +123,10 @@ class FilterViewModel(private val savedStateHandle: SavedStateHandle) : ViewMode
 
     fun updateTheirBoulders(option: FilterOptions) {
 
+    }
+
+    fun setSortOrder(sortOder: SortOrder, descending: Boolean) {
+        savedStateHandle["filter"] = filter.value.copy(sortOrder = sortOder, sortDescending = descending)
     }
 
     fun clearAllFilters() {

@@ -13,13 +13,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import com.mooo.koziol.mkb2.data.BookmarkedFilter
+import com.mooo.koziol.mkb2.data.room.BookmarkedFilter
 import com.mooo.koziol.mkb2.data.ClimbFilter
 import com.mooo.koziol.mkb2.data.ClimbsRepository
 import com.mooo.koziol.mkb2.data.ConfigRepository
-import com.mooo.koziol.mkb2.data.FilterDao
+import com.mooo.koziol.mkb2.data.room.FilterDao
 import com.mooo.koziol.mkb2.data.HoldsRepository
-import com.mooo.koziol.mkb2.data.MkbDatabase
+import com.mooo.koziol.mkb2.data.room.MkbDatabase
 import com.mooo.koziol.mkb2.data.OriginalDbOpenHelper
 import com.mooo.koziol.mkb2.data.RestClient
 import com.mooo.koziol.mkb2.data.SetterRepository
@@ -74,9 +74,9 @@ class MainActivity : ComponentActivity() {
 
     override fun onStop() {
         CoroutineScope(Dispatchers.IO).launch {
-            RestClient.close()
             val bookmark = BookmarkedFilter(1, "active", ClimbsRepository.activeFilter)
             bookmarkDao.insert(bookmark)
+            //RestClient.close()
             //db.close()
             //mkbDb.close()
         }

@@ -34,6 +34,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.mooo.koziol.mkb2.R
+import com.mooo.koziol.mkb2.data.SortOrder
+import java.util.Locale
 import kotlin.math.roundToInt
 
 @Composable
@@ -106,14 +108,14 @@ fun FilterClimbsScreen(
                 onBouldersChanged = filterViewModel::updateMyBoulders
             )
 
-            TheirClimbsFilter(
-                ascentsOptions = FilterOptions.INCLUDE,
-                triesOptions = FilterOptions.INCLUDE,
-                boulderFilter = FilterOptions.INCLUDE,
-                onAscentsChanged = filterViewModel::updateTheirAscents,
-                onTriesChanged = filterViewModel::updateTheirTries,
-                onBouldersChanged = filterViewModel::updateTheirBoulders
-            )
+            /*            TheirClimbsFilter(
+                            ascentsOptions = FilterOptions.INCLUDE,
+                            triesOptions = FilterOptions.INCLUDE,
+                            boulderFilter = FilterOptions.INCLUDE,
+                            onAscentsChanged = filterViewModel::updateTheirAscents,
+                            onTriesChanged = filterViewModel::updateTheirTries,
+                            onBouldersChanged = filterViewModel::updateTheirBoulders
+                        )*/
             Row {
                 HoldsFilter(
                     destinations["holdsFilter"], isSelected = filter.holds.isNotEmpty()
@@ -126,11 +128,126 @@ fun FilterClimbsScreen(
                 )
 
             }
-
+            SortSelector(filter.sortOrder, filter.sortDescending, filterViewModel::setSortOrder)
         }
     })
 }
 
+@Composable
+fun SortSelector(
+    sortBy: SortOrder, sortDescending: Boolean, onSortOrderChanged: (SortOrder, Boolean) -> Unit
+) {
+    Column {
+        Text("Sort by")
+        Row {
+            FilterChip(selected = sortBy == SortOrder.RATING, onClick = {
+                onSortOrderChanged(
+                    SortOrder.RATING, if (sortBy == SortOrder.RATING) {
+                        !sortDescending
+                    } else {
+                        sortDescending
+                    }
+                )
+            }, label = { }, leadingIcon = {
+                Icon(
+                    painter = painterResource(id = R.drawable.reviews_24dp_fill0_wght400_grad0_opsz24),
+                    contentDescription = null,
+                )
+            }, trailingIcon = {
+                if (sortDescending) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.south_east_24dp_fill0_wght400_grad0_opsz24),
+                        contentDescription = null,
+                    )
+                } else {
+                    Icon(
+                        painter = painterResource(id = R.drawable.north_east_24dp_fill0_wght400_grad0_opsz24),
+                        contentDescription = null,
+                    )
+                }
+            })
+            FilterChip(selected = sortBy == SortOrder.DIFFICULTY, onClick = {
+                onSortOrderChanged(
+                    SortOrder.DIFFICULTY, if (sortBy == SortOrder.DIFFICULTY) {
+                        !sortDescending
+                    } else {
+                        sortDescending
+                    }
+                )
+            }, label = { }, leadingIcon = {
+                Icon(
+                    painter = painterResource(id = R.drawable.exercise_24dp_fill0_wght400_grad0_opsz24),
+                    contentDescription = null,
+                )
+            }, trailingIcon = {
+                if (sortDescending) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.south_east_24dp_fill0_wght400_grad0_opsz24),
+                        contentDescription = null,
+                    )
+                } else {
+                    Icon(
+                        painter = painterResource(id = R.drawable.north_east_24dp_fill0_wght400_grad0_opsz24),
+                        contentDescription = null,
+                    )
+                }
+            })
+            FilterChip(selected = sortBy == SortOrder.AGE, onClick = {
+                onSortOrderChanged(
+                    SortOrder.AGE, if (sortBy == SortOrder.AGE) {
+                        !sortDescending
+                    } else {
+                        sortDescending
+                    }
+                )
+            }, label = { }, leadingIcon = {
+                Icon(
+                    painter = painterResource(id = R.drawable.calendar_clock_24dp_fill0_wght400_grad0_opsz24),
+                    contentDescription = null,
+                )
+            }, trailingIcon = {
+                if (sortDescending) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.south_east_24dp_fill0_wght400_grad0_opsz24),
+                        contentDescription = null,
+                    )
+                } else {
+                    Icon(
+                        painter = painterResource(id = R.drawable.north_east_24dp_fill0_wght400_grad0_opsz24),
+                        contentDescription = null,
+                    )
+                }
+            })
+            FilterChip(selected = sortBy == SortOrder.ASCENTS, onClick = {
+                onSortOrderChanged(
+                    SortOrder.ASCENTS, if (sortBy == SortOrder.ASCENTS) {
+                        !sortDescending
+                    } else {
+                        sortDescending
+                    }
+                )
+            }, label = { }, leadingIcon = {
+                Icon(
+                    painter = painterResource(id = R.drawable.mountain_flag_24px),
+                    contentDescription = null,
+                )
+            }, trailingIcon = {
+                if (sortDescending) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.south_east_24dp_fill0_wght400_grad0_opsz24),
+                        contentDescription = null,
+                    )
+                } else {
+                    Icon(
+                        painter = painterResource(id = R.drawable.north_east_24dp_fill0_wght400_grad0_opsz24),
+                        contentDescription = null,
+                    )
+                }
+            })
+        }
+
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -199,7 +316,10 @@ fun GradeRangeSelector(
 
         Text(
             String.format(
-                "Grade deviation: %.1f - %.1f", selectedMinDev, selectedMaxDev
+                locale = Locale.GERMANY,
+                "Grade deviation: %.1f - %.1f",
+                selectedMinDev,
+                selectedMaxDev
             )
         )
         RangeSlider(
@@ -226,7 +346,7 @@ fun RatingRangeSelector(
 
         Text(
             String.format(
-                "Rating: %.1f - %.1f", selectedMin, selectedMax
+                locale = Locale.GERMANY, "Rating: %.1f - %.1f", selectedMin, selectedMax
             )
         )
         RangeSlider(
@@ -257,7 +377,7 @@ fun ReachRangeSelector(
 
         Text(
             String.format(
-                "Reach: %.1f - %.1f", selectedMin , selectedMax
+                locale = Locale.GERMANY, "Reach: %.1f - %.1f", selectedMin, selectedMax
             )
         )
         RangeSlider(

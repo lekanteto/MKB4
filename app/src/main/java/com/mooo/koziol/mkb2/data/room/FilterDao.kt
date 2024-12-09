@@ -1,4 +1,4 @@
-package com.mooo.koziol.mkb2.data
+package com.mooo.koziol.mkb2.data.room
 
 import androidx.room.Dao
 import androidx.room.Delete
