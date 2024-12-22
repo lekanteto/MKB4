@@ -39,7 +39,7 @@ data class UserSyncRequest(
             @SerialName("syncs")
             val syncs: Syncs,
             @SerialName("tables")
-            val tables: List<String> = listOf("bids", "ascents" ),
+            val tables: List<String> = listOf("bids", "ascents", "tags" ),
             @SerialName("user_id")
             val userId: Int = 415940
         ) {

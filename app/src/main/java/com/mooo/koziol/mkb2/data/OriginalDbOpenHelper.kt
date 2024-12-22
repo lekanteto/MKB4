@@ -62,7 +62,45 @@ class OriginalDbOpenHelper(private val context: Context) :
 
     override fun getWritableDatabase(): SQLiteDatabase {
         installOrUpdateIfNecessary()
-        return super.getWritableDatabase()
+        val db = super.getWritableDatabase()
+        Log.d("MKB4", "b4 indexing ${db.path}")
+        createIndexes(db)
+        Log.d("MKB4", "after indexing ${db.path}")
+        return db
+    }
+
+    // Method to execute all CREATE INDEX statements
+    private fun createIndexes(db: SQLiteDatabase) {
+        // For JOINs
+        db.execSQL("CREATE INDEX IF NOT EXISTS idx_climbs_uuid ON climbs (uuid);")
+        db.execSQL("CREATE INDEX IF NOT EXISTS idx_climb_stats_climb_uuid ON climb_stats (climb_uuid);")
+        db.execSQL("CREATE INDEX IF NOT EXISTS idx_difficulty_grades_difficulty ON difficulty_grades (difficulty);")
+        db.execSQL("CREATE INDEX IF NOT EXISTS idx_climb_cache_climb_uuid ON climb_cache_fields (climb_uuid);")
+
+        // For WHERE clauses (equality filters)
+        db.execSQL("CREATE INDEX IF NOT EXISTS idx_climbs_layout_id ON climbs (layout_id);")
+        db.execSQL("CREATE INDEX IF NOT EXISTS idx_climbs_is_listed ON climbs (is_listed);")
+        db.execSQL("CREATE INDEX IF NOT EXISTS idx_climbs_is_draft ON climbs (is_draft);")
+        db.execSQL("CREATE INDEX IF NOT EXISTS idx_climbs_frames_count ON climbs (frames_count);")
+        db.execSQL("CREATE INDEX IF NOT EXISTS idx_climb_stats_angle ON climb_stats (angle);")
+        db.execSQL("CREATE INDEX IF NOT EXISTS idx_climbs_setter_username ON climbs (setter_username);")
+
+        // For WHERE clauses (range conditions)
+        db.execSQL("CREATE INDEX IF NOT EXISTS idx_climbs_edge ON climbs (edge_left, edge_bottom, edge_right, edge_top);")
+        db.execSQL("CREATE INDEX IF NOT EXISTS idx_climb_stats_quality_avg ON climb_stats (quality_average);")
+        db.execSQL("CREATE INDEX IF NOT EXISTS idx_climb_stats_display_difficulty ON climb_stats (display_difficulty);")
+        db.execSQL("CREATE INDEX IF NOT EXISTS idx_climb_stats_difficulty_avg ON climb_stats (difficulty_average);")
+        db.execSQL("CREATE INDEX IF NOT EXISTS idx_climb_cache_display_difficulty ON climb_cache_fields (display_difficulty);")
+        db.execSQL("CREATE INDEX IF NOT EXISTS idx_climb_stats_ascensionist_count ON climb_stats (ascensionist_count);")
+
+        // For LIKE clause
+        db.execSQL("CREATE INDEX IF NOT EXISTS idx_climbs_name ON climbs (name);")
+
+        // For subqueries
+        db.execSQL("CREATE INDEX IF NOT EXISTS idx_ascents_climb_uuid ON ascents (climb_uuid);")
+        db.execSQL("CREATE INDEX IF NOT EXISTS idx_ascents_angle ON ascents (angle);")
+        db.execSQL("CREATE INDEX IF NOT EXISTS idx_bids_climb_uuid ON bids (climb_uuid);")
+        db.execSQL("CREATE INDEX IF NOT EXISTS idx_bids_angle ON bids (angle);")
     }
 
     override fun getReadableDatabase(): SQLiteDatabase {

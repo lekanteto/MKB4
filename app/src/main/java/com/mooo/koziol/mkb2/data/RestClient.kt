@@ -166,6 +166,8 @@ object RestClient {
 
                 var ascentsDate = ""
                 var bidsDate = ""
+                var tagsDate = ""
+
                 syncResponse.pUT.userSyncs.forEach { row ->
                     if (row.tableName == "ascents") {
                         ascentsDate = row.lastSynchronizedAt
@@ -175,12 +177,19 @@ object RestClient {
                         bidsDate = row.lastSynchronizedAt
 
                     }
+                    if (row.tableName == "tags") {
+                        tagsDate = row.lastSynchronizedAt
+
+                    }
                 }
                 if (ascentsDate.isNotEmpty()) {
                     updateAscents(syncResponse.pUT.ascents, ascentsDate, userId)
                 }
                 if (bidsDate.isNotEmpty()) {
                     updateBids(syncResponse.pUT.bids, bidsDate, userId)
+                }
+                if (tagsDate.isNotEmpty()) {
+                    updateTags(syncResponse.pUT.tags, tagsDate, userId)
                 }
                 Log.d("MKB Rest", "End download user data")
 
@@ -275,6 +284,38 @@ object RestClient {
         }
     }
 
+    private suspend fun updateTags(newTags: List<SyncResponse.PUT.Tag>, date: String, userId: Int) {
+        Log.d("Mkb4", "in updateTagss")
+        withContext(Dispatchers.IO) {
+            _downloadCount.value = 0
+            db.beginTransaction()
+            newTags.forEach { tag ->
+                _downloadCount.value++
+                val row = ContentValues(4)
+                row.put("entity_uuid", tag.entityUuid)
+                row.put("user_id", tag.userId)
+                row.put("name", tag.name)
+                row.put("is_listed", tag.isListed)
+
+                if (tag.isListed) {
+                    db.insertWithOnConflict("tags", null, row, CONFLICT_REPLACE)
+                } else {
+                    db.delete("tags", "entity_uuid = ?", arrayOf(tag.entityUuid))
+                }
+            }
+
+            val syncDateRow = ContentValues(3)
+            syncDateRow.put("user_id", userId)
+            syncDateRow.put("table_name", "tags")
+            syncDateRow.put("last_synchronized_at", date)
+
+            val numOfRows =
+                db.insertWithOnConflict("user_syncs", null, syncDateRow, CONFLICT_REPLACE)
+            db.setTransactionSuccessful()
+            db.endTransaction()
+            Log.d("MKB4", "End of updating tags")
+        }
+    }
 
     private suspend fun createUserSyncRequestContent(id: Int): String =
         withContext(Dispatchers.IO) {

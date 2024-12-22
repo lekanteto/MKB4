@@ -22,6 +22,7 @@ data class ClimbFilter(
     val onlyMyAscents: Boolean = false,
     val includeMyTries: Boolean = true,
     val onlyMyTries: Boolean = false,
+    val onlyMyLikes: Boolean = false,
     val sortOrder: SortOrder = SortOrder.RATING,
     val sortDescending: Boolean = true,
     ) : Parcelable

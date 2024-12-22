@@ -99,12 +99,19 @@ fun FilterClimbsScreen(
             } else {
                 FilterOptions.EXCLUDE
             }
+            val myLikes: FilterOptions = if (filter.onlyMyLikes) {
+                FilterOptions.EXCLUSIVE
+            } else {
+                FilterOptions.INCLUDE
+            }
             MyClimbsFilter(
                 ascentsOptions = myAscents,
                 triesOptions = myTries,
+                likeOptions = myLikes,
                 boulderFilter = FilterOptions.INCLUDE,
                 onAscentsChanged = filterViewModel::updateMyAscents,
                 onTriesChanged = filterViewModel::updateMyTries,
+                onLikesChanged = filterViewModel::updateMyLikes,
                 onBouldersChanged = filterViewModel::updateMyBoulders
             )
 
@@ -325,7 +332,7 @@ fun GradeRangeSelector(
         RangeSlider(
             modifier = Modifier.padding(10.dp),
             value = selectedMinDev..selectedMaxDev,
-            //steps = 9,
+            steps = 9,
             onValueChange = { range -> onDeviationChanged(range.start, range.endInclusive) },
             valueRange = -0.5f..0.5f,
             onValueChangeFinished = {},
@@ -425,9 +432,11 @@ fun MinAscentsSelector(
 fun MyClimbsFilter(
     ascentsOptions: FilterOptions,
     triesOptions: FilterOptions,
+    likeOptions: FilterOptions,
     boulderFilter: FilterOptions,
     onAscentsChanged: (FilterOptions) -> Unit,
     onTriesChanged: (FilterOptions) -> Unit,
+    onLikesChanged: (FilterOptions) -> Unit,
     onBouldersChanged: (FilterOptions) -> Unit
 ) {
     Row(
@@ -448,10 +457,16 @@ fun MyClimbsFilter(
             },
 
             label = {
-                Text("My Ascents")
+                //Text("My Ascents")
             },
             selected = ascentsOptions != FilterOptions.INCLUDE,
             leadingIcon = {
+                Icon(
+                    painter = painterResource(id = R.drawable.mountain_flag_24px),
+                    contentDescription = null,
+                )
+            },
+            trailingIcon = {
                 when (ascentsOptions) {
                     FilterOptions.INCLUDE -> Icon(
                         painter = painterResource(id = R.drawable.outline_visibility_24),
@@ -488,10 +503,16 @@ fun MyClimbsFilter(
             },
 
             label = {
-                Text("My Tries")
+                //Text("My Tries")
             },
             selected = triesOptions != FilterOptions.INCLUDE,
             leadingIcon = {
+                Icon(
+                    painter = painterResource(id = R.drawable.mountain_flag_half),
+                    contentDescription = null,
+                )
+            },
+            trailingIcon = {
                 when (triesOptions) {
                     FilterOptions.INCLUDE -> Icon(
                         painter = painterResource(id = R.drawable.outline_visibility_24),
@@ -512,6 +533,37 @@ fun MyClimbsFilter(
                     )
 
                 }
+            },
+        )
+
+        FilterChip(
+            modifier = Modifier.padding(5.dp),
+            onClick = {
+                onLikesChanged(
+                    when (likeOptions) {
+                        FilterOptions.INCLUDE -> FilterOptions.EXCLUSIVE
+                        FilterOptions.EXCLUDE -> FilterOptions.INCLUDE
+                        FilterOptions.EXCLUSIVE -> FilterOptions.INCLUDE
+                    }
+                )
+            },
+
+            label = {
+                //Text("\uD83D\uDE0D")
+            },
+            selected = likeOptions != FilterOptions.INCLUDE,
+            leadingIcon = {
+                Icon(
+                    painter = painterResource(id = R.drawable.outline_bookmarks_24),
+                    contentDescription = null,
+                )
+            },
+            trailingIcon = {
+                Icon(
+                    painter = painterResource(id = R.drawable.outline_filter_alt_24),
+                    contentDescription = null,
+                    modifier = Modifier.size(FilterChipDefaults.IconSize)
+                )
             },
         )
     }
@@ -629,12 +681,19 @@ fun SetterFilter(setterName: String?, onSelectSetter: (String) -> Unit, isSelect
         },
 
         label = {
-            Text(setterName ?: "Setter")
+            //Text(setterName ?: "Setter")
         },
         selected = isSelected,
         leadingIcon = {
             Icon(
                 painter = painterResource(id = R.drawable.outline_engineering_24),
+                contentDescription = null,
+                modifier = Modifier.size(FilterChipDefaults.IconSize)
+            )
+        },
+        trailingIcon = {
+            Icon(
+                painter = painterResource(id = R.drawable.outline_filter_alt_24),
                 contentDescription = null,
                 modifier = Modifier.size(FilterChipDefaults.IconSize)
             )
@@ -653,12 +712,19 @@ fun HoldsFilter(onClick: (() -> Unit)?, isSelected: Boolean) {
         },
 
         label = {
-            Text("Filter holds")
+            //Text("Filter holds")
         },
         selected = isSelected,
         leadingIcon = {
             Icon(
                 painter = painterResource(id = R.drawable.background_dot_small_24px),
+                contentDescription = null,
+                modifier = Modifier.size(FilterChipDefaults.IconSize)
+            )
+        },
+        trailingIcon = {
+            Icon(
+                painter = painterResource(id = R.drawable.outline_filter_alt_24),
                 contentDescription = null,
                 modifier = Modifier.size(FilterChipDefaults.IconSize)
             )

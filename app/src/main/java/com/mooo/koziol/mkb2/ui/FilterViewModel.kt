@@ -64,6 +64,7 @@ class FilterViewModel(private val savedStateHandle: SavedStateHandle) : ViewMode
             onlyMyAscents = filter.value.onlyMyAscents,
             includeMyTries = filter.value.includeMyTries,
             onlyMyTries = filter.value.onlyMyTries,
+            onlyMyLikes = filter.value.onlyMyLikes,
             sortOrder = filter.value.sortOrder,
             sortDescending = filter.value.sortDescending
         )
@@ -107,6 +108,12 @@ class FilterViewModel(private val savedStateHandle: SavedStateHandle) : ViewMode
         val exclusive = (option == FilterOptions.EXCLUSIVE)
         savedStateHandle["filter"] =
             filter.value.copy(includeMyTries = include, onlyMyTries = exclusive)
+    }
+
+    fun updateMyLikes(option: FilterOptions) {
+        val exclusive = (option == FilterOptions.EXCLUSIVE)
+        savedStateHandle["filter"] =
+            filter.value.copy(onlyMyLikes = exclusive)
     }
 
     fun updateMyBoulders(option: FilterOptions) {

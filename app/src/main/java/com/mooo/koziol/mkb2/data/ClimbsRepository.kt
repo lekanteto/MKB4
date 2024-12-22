@@ -45,6 +45,7 @@ object ClimbsRepository {
         val includeMyAscents = if (filter.includeMyAscents) "1" else "0"
         val includeNotTriedByMe = if (filter.onlyMyTries) "0" else "1"
         val includeMyTries = if (filter.includeMyTries) "1" else "0"
+        val ignoreLikes = if (filter.onlyMyLikes) "0" else "1"
 
         val holdsFilter = filter.holds.replace("p", "%p") + "%"
 
@@ -70,15 +71,20 @@ object ClimbsRepository {
             (filter.maxGradeIndex + 0.49f).toString(),
             (filter.minGradeDeviation - 0.05f).toString(),
             (filter.maxGradeDeviation + 0.05f).toString(),
-            minDist.toString(),
-            maxDist.toString(),
+            //minDist.toString(),
+            //maxDist.toString(),
             filter.minAscents.toString(),
             filter.setterName,
             ignoreSetter,
+            filter.angle.toString(),
             includeNotClimbedByMe,
+            filter.angle.toString(),
             includeMyAscents,
+            filter.angle.toString(),
             includeNotTriedByMe,
+            filter.angle.toString(),
             includeMyTries,
+            ignoreLikes,
         )
     }
 
@@ -140,22 +146,29 @@ object ClimbsRepository {
                        CAST ( climb_stats.difficulty_average -
                        Round(climb_stats.difficulty_average) AS REAL ) 
                        BETWEEN ? AND ? -- min/max grade deviation
-                       AND climb_cache_fields.display_difficulty BETWEEN ? AND ? -- longest move
+                       -- AND climb_cache_fields.display_difficulty BETWEEN ? AND ? -- longest move
                        AND climb_stats.ascensionist_count >= ? -- min num of ascents
                        AND (climbs.setter_username = ? OR ?) -- set by
                        AND 
                        (climbs.uuid IN (SELECT ascents.climb_uuid -- only my ascents
-                       FROM ascents) OR ?)
+                       FROM ascents WHERE ascents.angle = ?) OR ?)
                        AND 
                        (climbs.uuid NOT IN (SELECT ascents.climb_uuid -- exclude my ascents
-                       FROM ascents) OR ?)
+                       FROM ascents WHERE ascents.angle = ?) OR ?)
                        AND 
-                       (climbs.uuid IN (SELECT bids.climb_uuid FROM bids)  -- only my tries
+                       (climbs.uuid IN (SELECT bids.climb_uuid 
+                       FROM bids WHERE bids.angle = ?)  -- only my tries
                        OR ?)
                        AND 
-                       (climbs.uuid NOT IN (SELECT bids.climb_uuid FROM bids)  -- exclude my tries
+                       (climbs.uuid NOT IN (SELECT bids.climb_uuid 
+                       FROM bids WHERE bids.angle = ?)  -- exclude my tries
                        OR ?)
-                """.trimIndent() + convertToOrderBy(filter) + " LIMIT  100 ", convertToSqlArgs(filter)
+                       AND 
+                       (climbs.uuid IN (SELECT tags.entity_uuid 
+                       FROM tags)  -- only my likes
+                       OR ?)
+                """.trimIndent() + convertToOrderBy(filter) + " LIMIT  100 ",
+                    convertToSqlArgs(filter)
                 )
 
                 val uuidIndex = climbsCursor.getColumnIndexOrThrow("climbUuid")
@@ -200,7 +213,7 @@ object ClimbsRepository {
         var currentAscent: Ascent
         while ((ascentsCursor.moveToNext())) {
             currentAscent = Ascent(
-                climbedAt = ascentsCursor.getString(6)
+                angle = ascentsCursor.getInt(3), climbedAt = ascentsCursor.getString(6)
             )
             ascentsList.add(currentAscent)
         }

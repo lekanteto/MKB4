@@ -21,6 +21,8 @@ data class SyncResponse(
         val climbs: List<Climb> = listOf(),
         @SerialName("shared_syncs")
         val sharedSyncs: List<SharedSync> = listOf(),
+        @SerialName("tags")
+        val tags: List<Tag> = listOf(),
         @SerialName("user_syncs")
         val userSyncs: List<UserSync> = listOf(),
         @SerialName("users")
@@ -172,6 +174,18 @@ data class SyncResponse(
             val tableName: String = "",
             @SerialName("user_id")
             val userId: Int = 0
+        )
+
+        @Serializable
+        data class Tag(
+            @SerialName("entity_uuid")
+            val entityUuid: String = "",
+            @SerialName("user_id")
+            val userId: Int = 0,
+            @SerialName("name")
+            val name: String = "",
+            @SerialName("is_listed")
+            val isListed: Boolean = false
         )
 
         @Serializable
